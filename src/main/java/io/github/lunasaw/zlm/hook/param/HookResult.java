@@ -1,38 +1,23 @@
 package io.github.lunasaw.zlm.hook.param;
 
-import com.alibaba.fastjson2.annotation.JSONField;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Data
-public class HookResult {
-
+/**
+ * ZLM Hook 回调结果 - 通用
+ *
+ * @param code 错误代码，0表示成功
+ * @param msg  错误提示信息
+ */
+public record HookResult(
+        @JsonProperty("code") int code,
+        @JsonProperty("msg") String msg
+) {
 
     /**
-     * 错误代码，0代表允许推流
+     * 成功结果
      */
-    @JSONField(name = "code")
-    private int code;
-
-    /**
-     * 不允许推流时的错误提示
-     */
-    @JSONField(name = "msg")
-    private String msg;
-
-    public HookResult() {
-    }
-
-    public HookResult(int code, String msg) {
-        this.code = code;
-        this.msg = msg;
-    }
-
-    public static HookResult SUCCESS() {
+    public static HookResult success() {
         return new HookResult(0, "success");
-    }
-
-    public static HookResult Fail() {
-        return new HookResult(-1, "fail");
     }
 
 }

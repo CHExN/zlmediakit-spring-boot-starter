@@ -1,11 +1,12 @@
-
-spring:
-  profiles:
-    active: dev
-
 logging:
   config: classpath:log/logback.xml
   level:
     root: INFO
 server:
   port: 8086
+
+springdoc:
+  api-docs:
+    enabled: false     # 关掉 /v3/api-docs
+  swagger-ui:
+    enabled: false     # 关掉 /swagger-ui.html

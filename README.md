@@ -31,7 +31,7 @@ API进行了完整封装，并提供了Hook事件处理机制，支持集群化�
 
 ## 系统要求
 
-- Java 17+
+- Java 21+
 - Spring Boot 3.5.3+
 - ZLMediaKit服务器
 - 支持Jakarta EE规范（使用jakarta包而非javax包）
@@ -75,19 +75,31 @@ zlm:
 #### 方式一：直接调用静态方法
 
 ```java
-import io.github.lunasaw.zlm.api.ZlmRestService;
-import io.github.lunasaw.zlm.entity.ServerResponse;
-import io.github.lunasaw.zlm.entity.Version;
+import io.github.lunasaw.zlm.api.service.ZlmRestService;
+import io.github.lunasaw.zlm.api.entity.ServerResponse;
+import io.github.lunasaw.zlm.api.entity.Version;
 
 // 获取服务器版本信息
 ServerResponse<Version> versionResponse = ZlmRestService.getVersion("http://127.0.0.1:9092", "zlm");
-System.out.println("ZLMediaKit版本: " + versionResponse.getData().getVersion());
+System.out.
 
-// 获取流列表
-ServerResponse<List<MediaData>> mediaList = ZlmRestService.getMediaList("http://127.0.0.1:9092", "zlm", new HashMap<>());
-mediaList.getData().forEach(media -> {
-    System.out.println("流ID: " + media.getApp() + "/" + media.getStream());
-});
+        println("ZLMediaKit版本: "+versionResponse.getData().
+
+        getVersion());
+
+        // 获取流列表
+        ServerResponse<List<MediaData>> mediaList = ZlmRestService.getMediaList("http://127.0.0.1:9092", "zlm", new HashMap<>());
+mediaList.
+
+        getData().
+
+        forEach(media ->{
+        System.out.
+
+        println("流ID: "+media.getApp() +"/"+media.
+
+        getStream());
+        });
 ```
 
 #### 方式二：使用内置API控制器

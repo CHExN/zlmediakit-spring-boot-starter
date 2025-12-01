@@ -1,7 +1,6 @@
 package io.github.lunasaw.zlm.node.impl;
 
 import io.github.lunasaw.zlm.config.ZlmNode;
-import io.github.lunasaw.zlm.enums.LoadBalancerEnums;
 import io.github.lunasaw.zlm.node.LoadBalancer;
 import io.github.lunasaw.zlm.node.NodeSupplier;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +11,8 @@ import java.util.Random;
 /**
  * 加权轮询负载均衡器
  * 每次选择节点时基于权重进行随机选择，不维护本地状态
+ *
  * @author luna
- * @date 2024/1/5
  */
 @Slf4j
 public class WeightRoundRobinLoadBalancer implements LoadBalancer {
@@ -53,12 +52,12 @@ public class WeightRoundRobinLoadBalancer implements LoadBalancer {
         }
 
         // 兜底返回最后一个节点
-        return nodes.get(nodes.size() - 1);
+        return nodes.getLast();
     }
 
     @Override
-    public String getType() {
-        return LoadBalancerEnums.WEIGHT_ROUND_ROBIN.getType();
+    public Type getType() {
+        return LoadBalancer.Type.WEIGHT_ROUND_ROBIN;
     }
 
     /**

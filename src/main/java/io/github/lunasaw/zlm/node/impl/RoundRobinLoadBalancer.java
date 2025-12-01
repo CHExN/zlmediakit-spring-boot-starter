@@ -1,7 +1,6 @@
 package io.github.lunasaw.zlm.node.impl;
 
 import io.github.lunasaw.zlm.config.ZlmNode;
-import io.github.lunasaw.zlm.enums.LoadBalancerEnums;
 import io.github.lunasaw.zlm.node.LoadBalancer;
 import io.github.lunasaw.zlm.node.NodeSupplier;
 import lombok.extern.slf4j.Slf4j;
@@ -11,9 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 轮询负载均衡器
- * 每次选择节点时直接从NodeSupplier获取最新节点列表
+ * 每次选择节点时直接从 NodeSupplier 获取最新节点列表
+ *
  * @author luna
- * @date 2024/1/5
  */
 @Slf4j
 public class RoundRobinLoadBalancer implements LoadBalancer {
@@ -41,8 +40,8 @@ public class RoundRobinLoadBalancer implements LoadBalancer {
     }
 
     @Override
-    public String getType() {
-        return LoadBalancerEnums.ROUND_ROBIN.getType();
+    public Type getType() {
+        return LoadBalancer.Type.ROUND_ROBIN;
     }
 
     /**

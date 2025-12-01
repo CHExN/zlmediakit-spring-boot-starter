@@ -5,29 +5,24 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.lunasaw</groupId>
-    <artifactId>zlm-spring-boot-starter</artifactId>
-    <version>${zlm-spring-boot-starter.version}</version>
+    <artifactId>zlmediakit-spring-boot-starter</artifactId>
+    <version>${zlmediakit-spring-boot-starter.version}</version>
 
-    <name>zlm-spring-boot-starter</name>
+    <name>zlmediakit-spring-boot-starter</name>
     <description>ZLMediaKit restful api and hook starter</description>
-    <url>https://github.com/lunasaw/zlm-spring-boot-starter</url>
-
+    <url>https://github.com/lunasaw/zlmediakit-spring-boot-starter</url>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <spring-boot.version>3.5.3</spring-boot.version>
-        <luna-common.version>2.6.5</luna-common.version>
-        <github.username>lunasaw</github.username>
         <app.profiles>${project.name}</app.profiles>
-        <zlm-spring-boot-starter.version>1.0.9</zlm-spring-boot-starter.version>
+        <zlmediakit-spring-boot-starter.version>1.0.0</zlmediakit-spring-boot-starter.version>
     </properties>
 
     <developers>
         <developer>
-            <name>luna</name>
-            <id>luna</id>
-            <email>iszychen@gmail.com</email>
+            <name>CHEaN</name>
         </developer>
     </developers>
     <licenses>
@@ -37,18 +32,11 @@
         </license>
     </licenses>
     <scm>
-        <url>https://github.com/lunasaw/zlm-spring-boot-starter</url>
-        <connection>https://github.com/lunasaw/zlm-spring-boot-starter</connection>
-        <developerConnection>https://github.com/lunasaw/zlm-spring-boot-starter.git</developerConnection>
+        <url>https://github.com/CHExN/zlmediakit-spring-boot-starter</url>
     </scm>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>io.github.lunasaw</groupId>
-                <artifactId>luna-common</artifactId>
-                <version>${luna-common.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -60,187 +48,117 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <!-- 自动配置核心 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
+        <!-- 配置提示 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
 
+        <!-- Spring Web 依赖 -->
         <dependency>
-            <groupId>io.github.lunasaw</groupId>
-            <artifactId>luna-common</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <optional>true</optional>
         </dependency>
 
-        <!-- OpenAPI/Swagger 依赖 -->
+        <!-- Swagger 注解依赖 -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.9</version>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
+            <version>2.2.38</version>
         </dependency>
+
+        <!--<dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>-->
+
+        <!-- Jackson 依赖 -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
-            <version>2.8.9</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!--<dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>-->
+
+
+        <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
+        <!-- Base16/32/64、Hex、各种摘要算法（MD5、SHA-1、SHA-256…）编码/解码 -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
+        <!-- Apache HttpClient 5.x，HTTP/HTTPS 客户端，连接池、重试、超时、代理等 -->
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+        </dependency>
+        <!-- IO 工具，IOUtils、FileUtils、各种流实现和文件过滤器 -->
+        <!--<dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>-->
+        <!-- Bean Validation 规范 API，@NotNull, @Size, @Email 等约束注解，只是接口和注解，不含实现-->
+        <!--<dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- JAXB 实现，用于 Java 对象与 XML 之间的绑定（@XmlRootElement 等）-->
+        <!--<dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+        </dependency>-->
+
     </dependencies>
 
-
     <profiles>
+        <!-- 本地/测试启用 swagger 的 profile -->
         <profile>
-            <id>github_auth</id>
-            <distributionManagement>
-                <repository>
-                    <id>github_auth</id>
-                    <name>GitHub OWNER Apache Maven Packages</name>
-                    <url>https://maven.pkg.github.com/lunasaw/zlm-spring-boot-starter</url>
-                </repository>
-                <snapshotRepository>
-                    <id>github_auth</id>
-                    <name>GitHub OWNER Apache Maven Packages</name>
-                    <url>https://maven.pkg.github.com/lunasaw/zlm-spring-boot-starter</url>
-                </snapshotRepository>
-            </distributionManagement>
-            <repositories>
-                <repository>
-                    <!-- id需要与上面的server对应的id匹配 -->
-                    <id>github_auth</id>
-                    <name>GitHub OWNER Apache Maven Packages</name>
-                    <url>https://maven.pkg.github.com/lunasaw/zlm-spring-boot-starter</url>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-            </repositories>
+            <id>swagger</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <!-- 只有显式指定 -Pswagger 时才启用 -->
+                <activeByDefault>false</activeByDefault>
             </activation>
-        </profile>
-        <profile>
-            <id>ossrh</id>
-            <distributionManagement>
-                <repository>
-                    <id>ossrh</id>
-                    <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
-                </repository>
-                <snapshotRepository>
-                    <id>ossrh</id>
-                    <url>https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots</url>
-                </snapshotRepository>
-            </distributionManagement>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <!--这是自动发布的插件-->
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.7.0</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://ossrh-staging-api.central.sonatype.com/</nexusUrl>
-                            <!--自动释放，deploy就不需要在仓库中在操作部署了-->
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                            <goal>deploy</goal>
-                        </configuration>
-                    </plugin>
 
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-release-plugin</artifactId>
-                        <version>3.1.1</version>
-                        <configuration>
-                            <autoVersionSubmodules>true</autoVersionSubmodules>
-                            <useReleaseProfile>false</useReleaseProfile>
-                            <!--正式包release 快照包snapshots-->
-                            <releaseProfiles>snapshots</releaseProfiles>
-                            <goals>deploy</goals>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.14.0</version>
-                        <configuration>
-                            <source>17</source>
-                            <target>17</target>
-                            <encoding>utf-8</encoding>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.1.0</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <gpgArguments>
-                                <arg>--pinentry-mode</arg>
-                                <arg>loopback</arg>
-                            </gpgArguments>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.0</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
-                        <configuration>
-                            <!--<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>-->
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                            <aggregate>true</aggregate>
-                            <charset>UTF-8</charset><!-- utf-8读取文件 -->
-                            <encoding>UTF-8</encoding><!-- utf-8进行编码代码 -->
-                            <docencoding>UTF-8</docencoding><!-- utf-8进行编码文档 -->
-                            <tags>
-                                <tag>
-                                    <name>date</name>
-                                    <name>description</name>
-                                </tag>
-                            </tags>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+            <dependencies>
+                <dependency>
+                    <groupId>org.springdoc</groupId>
+                    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                    <version>2.8.14</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-undertow</artifactId>
+                    <exclusions>
+                        <!-- 排除 undertow-websockets-jsr 依赖 -->
+                        <exclusion>
+                            <groupId>io.undertow</groupId>
+                            <artifactId>undertow-websockets-jsr</artifactId>
+                        </exclusion>
+                    </exclusions>
+                    <optional>true</optional>
+                </dependency>
+
+            </dependencies>
         </profile>
     </profiles>
 

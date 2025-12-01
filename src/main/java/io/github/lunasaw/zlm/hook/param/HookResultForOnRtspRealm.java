@@ -1,20 +1,28 @@
 package io.github.lunasaw.zlm.hook.param;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @author luna
- * @date 2023/12/5
+ * ZLM Hook 回调结果 - RTSP 鉴权 Realm
+ *
+ * @param code  错误代码，固定返回 0
+ * @param realm RTSP 鉴权 Realm，空字符串表示不需要鉴权
  */
-@Data
-public class HookResultForOnRtspRealm extends HookResult {
+public record HookResultForOnRtspRealm(
+        @JsonProperty("code") int code,
+        @JsonProperty("realm") String realm
+) {
 
-    /**
-     * 该rtsp流是否需要rtsp专有鉴权，空字符串代码不需要鉴权
-     */
-    private String realm;
-
-    public static HookResultForOnRtspRealm SUCCESS() {
-        return new HookResultForOnRtspRealm();
+    public HookResultForOnRtspRealm {
+        code = 0;
     }
+
+    public HookResultForOnRtspRealm(String realm) {
+        this(0, realm);
+    }
+
+    public static HookResultForOnRtspRealm success() {
+        return new HookResultForOnRtspRealm("");
+    }
+
 }
