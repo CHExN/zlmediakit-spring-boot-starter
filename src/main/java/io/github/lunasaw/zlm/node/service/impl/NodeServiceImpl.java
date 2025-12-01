@@ -4,6 +4,7 @@ import io.github.lunasaw.zlm.config.ZlmNode;
 import io.github.lunasaw.zlm.node.LoadBalancer;
 import io.github.lunasaw.zlm.node.NodeSupplier;
 import io.github.lunasaw.zlm.node.service.NodeService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -11,21 +12,19 @@ import org.springframework.util.Assert;
 import java.util.List;
 
 /**
- * ZLM节点服务实现类
+ * ZLM 节点服务实现类
  * 整合负载均衡器和节点提供器的功能，提供统一的节点管理服务
  *
  * @author luna
- * @date 2025/01/23
  */
-@Service
+@RequiredArgsConstructor
 public class NodeServiceImpl implements NodeService {
 
-    @Autowired
-    private LoadBalancer loadBalancer;
+    private final LoadBalancer loadBalancer;
 
     @Override
     public ZlmNode getAvailableNode(String nodeKey) {
-        Assert.hasText(nodeKey, "节点key不能为空");
+        Assert.hasText(nodeKey, "节点 key 不能为空");
         ZlmNode zlmNode = selectNode(nodeKey);
         if (zlmNode != null) {
             return zlmNode;
@@ -35,9 +34,9 @@ public class NodeServiceImpl implements NodeService {
 
     @Override
     public ZlmNode selectNode(String key) {
-        Assert.hasText(key, "负载均衡选择key不能为空");
+        Assert.hasText(key, "负载均衡选择 key 不能为空");
         ZlmNode node = loadBalancer.selectNode(key);
-        Assert.notNull(node, "未找到可用的ZLM节点");
+        Assert.notNull(node, "未找到可用的 ZLM 节点");
         return node;
     }
 }

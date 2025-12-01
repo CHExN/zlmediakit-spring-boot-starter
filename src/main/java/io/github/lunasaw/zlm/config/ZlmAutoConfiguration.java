@@ -1,72 +1,160 @@
 package io.github.lunasaw.zlm.config;
 
+import io.github.lunasaw.zlm.api.ZlmAPI;
+import io.github.lunasaw.zlm.hook.ZlmHook;
 import io.github.lunasaw.zlm.hook.service.ZlmHookService;
 import io.github.lunasaw.zlm.hook.service.impl.DefaultZlmHookServiceImpl;
 import io.github.lunasaw.zlm.node.LoadBalancer;
 import io.github.lunasaw.zlm.node.NodeSupplier;
 import io.github.lunasaw.zlm.node.impl.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.github.lunasaw.zlm.node.service.NodeService;
+import io.github.lunasaw.zlm.node.service.impl.NodeServiceImpl;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * @author luna
- * @version 1.0
- * @date 2023/12/2
- * @description:
+ * ZLMediaKit 自动配置类
+ * <p>
+ * 根据配置条件自动装配 ZLMediaKit 相关的 Bean
+ *
+ * @author CHEaN
  */
 @AutoConfiguration
-@ConfigurationPropertiesScan
-@EnableConfigurationProperties(ZlmProperties.class)
-@ComponentScan(basePackages = "io.github.lunasaw.zlm")
+@EnableConfigurationProperties({ZlmProperties.class, ZlmThreadPoolProperties.class})
 @ConditionalOnProperty(prefix = "zlm", name = "enable", havingValue = "true", matchIfMissing = true)
 public class ZlmAutoConfiguration {
 
-    @Autowired
-    ZlmProperties zlmProperties;
-
+    /**
+     * 默认的 ZlmHookService 实现
+     * <p>
+     * 当 zlm.hook-enable = true 且容器中不存在自定义 ZlmHookService Bean 时，装配默认实现
+     *
+     * @return DefaultZlmHookServiceImpl 实例
+     */
     @Bean
+    @ConditionalOnProperty(prefix = "zlm", name = "hook-enable", havingValue = "true")
     @ConditionalOnMissingBean
     public ZlmHookService zlmHookService() {
         return new DefaultZlmHookServiceImpl();
     }
 
+    /**
+     * ZLMediaKit 专用线程池
+     * 当 zlm.hook-enable = true 且存在 ZlmHookService 时装配
+     *
+     * @param config 线程池配置
+     * @return ThreadPoolTaskExecutor 实例
+     */
     @Bean
-    @ConditionalOnMissingBean
-    public NodeSupplier nodeSupplier() {
-        return new DefaultNodeSupplier();
+    @ConditionalOnProperty(prefix = "zlm", name = "hook-enable", havingValue = "true")
+    @ConditionalOnBean(ZlmHookService.class)
+    @ConditionalOnMissingBean(name = "zlmTaskExecutor")
+    public ThreadPoolTaskExecutor zlmTaskExecutor(ZlmThreadPoolProperties config) {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(config.getCorePoolSize());
+        executor.setMaxPoolSize(config.getMaxPoolSize());
+        executor.setQueueCapacity(config.getQueueCapacity());
+        executor.setKeepAliveSeconds(config.getKeepAliveTime());
+        executor.setThreadNamePrefix(config.getThreadNamePrefix());
+
+        // 等待所有任务完成后再关闭线程池
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
+
+        // 线程池对拒绝任务的处理策略
+        // CallerRunsPolicy：由调用线程（提交任务的线程）处理该任务
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        // 初始化
+        executor.initialize();
+        return executor;
     }
 
+    /**
+     * ZlmHookAPI 控制器
+     * <p>
+     * 当 zlm.hook-enable = true 时装配
+     *
+     * @param zlmHookService ZlmHookService 实例
+     * @param executor       异步任务执行器
+     * @return ZlmHookAPI 实例
+     */
+    @Bean
+    @ConditionalOnProperty(prefix = "zlm", name = "hook-enable", havingValue = "true")
+    public ZlmHook zlmHookAPI(ZlmHookService zlmHookService,
+                              @Qualifier("zlmTaskExecutor") AsyncTaskExecutor executor) {
+        return new ZlmHook(zlmHookService, executor);
+    }
+
+    /**
+     * ZlmAPI 控制器
+     *
+     * @param nodeSupplier NodeSupplier 实例
+     * @param nodeService  NodeService 实例
+     * @return ZlmAPI 实例
+     */
+    @Bean
+    public ZlmAPI zlmAPI(NodeSupplier nodeSupplier, NodeService nodeService) {
+        return new ZlmAPI(nodeSupplier, nodeService);
+    }
+
+    /**
+     * 默认的 NodeService 实现
+     * <p>
+     * 当缺失时启用
+     *
+     * @param loadBalancer 负载均衡器实例
+     * @return NodeServiceImpl 实例
+     */
     @Bean
     @ConditionalOnMissingBean
-    public LoadBalancer loadBalancer(NodeSupplier nodeSupplier) {
-        LoadBalancer balancer;
-        switch (zlmProperties.getBalance()) {
-            case RANDOM:
-                balancer = new RandomLoadBalancer();
-                break;
-            case ROUND_ROBIN:
-                balancer = new RoundRobinLoadBalancer();
-                break;
-            case CONSISTENT_HASHING:
-                balancer = new ConsistentHashingLoadBalancer();
-                break;
-            case WEIGHT_RANDOM:
-                balancer = new WeightRandomLoadBalancer();
-                break;
-            case WEIGHT_ROUND_ROBIN:
-                balancer = new WeightRoundRobinLoadBalancer();
-                break;
-            default:
-                throw new RuntimeException("未找到负载均衡器");
-        }
+    public NodeService nodeService(LoadBalancer loadBalancer) {
+        return new NodeServiceImpl(loadBalancer);
+    }
 
-        // 设置NodeSupplier到LoadBalancer中
+    /**
+     * 默认的 NodeSupplier 实现
+     * <p>
+     * 当缺失时启用
+     *
+     * @param zlmProperties zml 配置属性
+     * @return DefaultNodeSupplier 实例
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public NodeSupplier nodeSupplier(ZlmProperties zlmProperties) {
+        return new DefaultNodeSupplier(zlmProperties);
+    }
+
+    /**
+     * 负载均衡器 Bean
+     * <p>
+     * 根据配置的负载均衡策略创建相应的 LoadBalancer 实例
+     *
+     * @param zlmProperties zml 配置属性
+     * @param nodeSupplier  NodeSupplier 实例
+     * @return LoadBalancer 实例
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public LoadBalancer loadBalancer(ZlmProperties zlmProperties, NodeSupplier nodeSupplier) {
+        LoadBalancer balancer = switch (zlmProperties.getBalance()) {
+            case RANDOM -> new RandomLoadBalancer();
+            case ROUND_ROBIN -> new RoundRobinLoadBalancer();
+            case CONSISTENT_HASHING -> new ConsistentHashingLoadBalancer();
+            case WEIGHT_RANDOM -> new WeightRandomLoadBalancer();
+            case WEIGHT_ROUND_ROBIN -> new WeightRoundRobinLoadBalancer();
+        };
+
+        // 设置 NodeSupplier 到 LoadBalancer 中
         balancer.setNodeSupplier(nodeSupplier);
 
         return balancer;

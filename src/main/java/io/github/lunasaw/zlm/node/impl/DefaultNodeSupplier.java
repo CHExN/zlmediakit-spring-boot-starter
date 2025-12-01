@@ -4,22 +4,18 @@ import io.github.lunasaw.zlm.config.ZlmNode;
 import io.github.lunasaw.zlm.config.ZlmProperties;
 import io.github.lunasaw.zlm.node.NodeSupplier;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
 /**
  * 默认节点提供器
+ * <p>
  * 从配置文件中获取节点列表
  *
- * @author luna
- * @date 2024/1/5
+ * @author CHEaN
  */
 @Slf4j
-public class DefaultNodeSupplier implements NodeSupplier {
-
-    @Autowired
-    private ZlmProperties zlmProperties;
+public record DefaultNodeSupplier(ZlmProperties zlmProperties) implements NodeSupplier {
 
     @Override
     public String getName() {

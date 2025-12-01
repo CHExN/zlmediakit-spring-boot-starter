@@ -1,7 +1,6 @@
 package io.github.lunasaw.zlm.node.impl;
 
 import io.github.lunasaw.zlm.config.ZlmNode;
-import io.github.lunasaw.zlm.enums.LoadBalancerEnums;
 import io.github.lunasaw.zlm.node.LoadBalancer;
 import io.github.lunasaw.zlm.node.NodeSupplier;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +10,8 @@ import java.util.*;
 /**
  * 一致性哈希负载均衡器
  * 每次选择节点时重新构建哈希环，确保使用最新节点列表
+ *
  * @author luna
- * @date 2024/1/5
  */
 @Slf4j
 public class ConsistentHashingLoadBalancer implements LoadBalancer {
@@ -54,8 +53,8 @@ public class ConsistentHashingLoadBalancer implements LoadBalancer {
     }
 
     @Override
-    public String getType() {
-        return LoadBalancerEnums.CONSISTENT_HASHING.getType();
+    public Type getType() {
+        return LoadBalancer.Type.CONSISTENT_HASHING;
     }
 
     /**

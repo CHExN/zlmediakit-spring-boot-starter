@@ -1,175 +1,80 @@
 package io.github.lunasaw.zlm.hook.param;
 
-import com.alibaba.fastjson2.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
+import lombok.With;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class HookResultForOnPublish extends HookResult {
+/**
+ * ZLM Hook 回调结果 - 推流鉴权
+ *
+ * @param code           错误代码，0表示成功
+ * @param msg            错误提示信息
+ * @param enableHls      是否生成 hls-ts
+ * @param enableHlsFmp4  是否生成 hls-fmp4
+ * @param enableMp4      是否启用 mp4 录制
+ * @param enableRtsp     是否转 rtsp
+ * @param enableRtmp     是否转 rtmp/flv
+ * @param enableTs       是否转 http-ts/ws-ts
+ * @param enableFmp4     是否转 http-fmp4/ws-fmp4
+ * @param hlsDemand      是否按需生成（nullable → 使用默认值）
+ * @param rtspDemand     是否按需生成（nullable → 使用默认值）
+ * @param rtmpDemand     是否按需生成（nullable → 使用默认值）
+ * @param tsDemand       是否按需生成（nullable → 使用默认值）
+ * @param fmp4Demand     是否按需生成（nullable → 使用默认值）
+ * @param enableAudio    转协议是否开启音频
+ * @param addMuteAudio   无音频时是否添加静音轨 AAC
+ * @param mp4SavePath    mp4 保存根目录
+ * @param mp4MaxSecond   mp4 切片大小（秒）
+ * @param mp4AsPlayer    是否参与播放人数计数
+ * @param hlsSavePath    hls 保存目录
+ * @param modifyStamp    时间戳覆盖模式（0/1/2）
+ * @param continuePushMs 断连续推延时
+ * @param autoClose      无人观看是否自动关闭流
+ * @param streamReplace  自定义流 ID（可替换 ssrc）
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder
+@With
+public record HookResultForOnPublish(
 
-    /**
-     * 是否转换成hls-mpegts协议
-     */
-    @JSONField(name = "enable_hls")
-    @JsonProperty("enable_hls")
-    private boolean enableHls;
+        @JsonProperty("code") int code,
+        @JsonProperty("msg") String msg,
 
-    /**
-     * 是否转换成hls-fmp4协议
-     */
-    @JSONField(name = "enable_hls_fmp4")
-    @JsonProperty("enable_hls_fmp4")
-    private boolean enableHlsFmp4;
+        @JsonProperty("enable_hls") Boolean enableHls,              // 是否生成 hls-ts
+        @JsonProperty("enable_hls_fmp4") Boolean enableHlsFmp4,     // 是否生成 hls-fmp4
+        @JsonProperty("enable_mp4") Boolean enableMp4,              // 是否启用 mp4 录制
+        @JsonProperty("enable_rtsp") Boolean enableRtsp,            // 是否转 rtsp
+        @JsonProperty("enable_rtmp") Boolean enableRtmp,            // 是否转 rtmp/flv
+        @JsonProperty("enable_ts") Boolean enableTs,                // 是否转 http-ts/ws-ts
+        @JsonProperty("enable_fmp4") Boolean enableFmp4,            // 是否转 http-fmp4/ws-fmp4
 
-    /**
-     * 是否允许mp4录制
-     */
-    @JSONField(name = "enable_mp4")
-    @JsonProperty("enable_mp4")
-    private boolean enableMp4;
-    /**
-     * 是否转rtsp协议
-     */
-    @JSONField(name = "enable_rtsp")
-    @JsonProperty("enable_rtsp")
-    private boolean enableRtsp;
+        @JsonProperty("hls_demand") Boolean hlsDemand,              // 是否按需生成（nullable → 使用默认值）
+        @JsonProperty("rtsp_demand") Boolean rtspDemand,
+        @JsonProperty("rtmp_demand") Boolean rtmpDemand,
+        @JsonProperty("ts_demand") Boolean tsDemand,
+        @JsonProperty("fmp4_demand") Boolean fmp4Demand,
 
-    /**
-     * 是否转rtmp/flv协议
-     */
-    @JSONField(name = "enable_rtmp")
-    @JsonProperty("enable_rtmp")
-    private boolean enableRtmp;
+        @JsonProperty("enable_audio") Boolean enableAudio,          // 转协议是否开启音频
+        @JsonProperty("add_mute_audio") Boolean addMuteAudio,       // 无音频时是否添加静音轨 AAC
 
-    /**
-     * 是否转http-ts/ws-ts协议
-     */
-    @JSONField(name = "enable_ts")
-    @JsonProperty("enable_ts")
-    private boolean enableTs;
+        @JsonProperty("mp4_save_path") String mp4SavePath,          // mp4 保存根目录
+        @JsonProperty("mp4_max_second") Integer mp4MaxSecond,       // mp4 切片大小（秒）
+        @JsonProperty("mp4_as_player") Boolean mp4AsPlayer,         // 是否参与播放人数计数
 
-    /**
-     * 是否转http-fmp4/ws-fmp4协议
-     */
-    @JSONField(name = "enable_fmp4")
-    @JsonProperty("enable_fmp4")
-    private boolean enableFmp4;
+        @JsonProperty("hls_save_path") String hlsSavePath,          // hls 保存目录
+        @JsonProperty("modify_stamp") Integer modifyStamp,          // 时间戳覆盖模式（0/1/2）
+        @JsonProperty("continue_push_ms") Integer continuePushMs,   // 断连续推延时
+        @JsonProperty("auto_close") Boolean autoClose,              // 无人观看是否自动关闭流
+        @JsonProperty("stream_replace") String streamReplace        // 自定义流 ID（可替换 ssrc）
+) {
 
-    /**
-     * 该协议是否有人观看才生成
-     */
-    @JSONField(name = "hls_demand")
-    @JsonProperty("hls_demand")
-    private boolean hlsDemand;
-
-    /**
-     * 该协议是否有人观看才生成
-     */
-    @JSONField(name = "rtsp_demand")
-    @JsonProperty("rtsp_demand")
-    private boolean rtspDemand;
-
-    /**
-     * 该协议是否有人观看才生成
-     */
-    @JSONField(name = "rtmp_demand")
-    @JsonProperty("rtmp_demand")
-    private boolean rtmpDemand;
-
-    /**
-     * 该协议是否有人观看才生成
-     */
-    @JSONField(name = "ts_demand")
-    @JsonProperty("ts_demand")
-    private boolean tsDemand;
-
-    /**
-     * 该协议是否有人观看才生成
-     */
-    @JSONField(name = "fmp4_demand")
-    @JsonProperty("fmp4_demand")
-    private boolean fmp4Demand;
-
-    /**
-     * 转协议时是否开启音频
-     */
-    @JSONField(name = "enable_audio")
-    @JsonProperty("enable_audio")
-    private boolean enableAudio;
-
-    /**
-     * 转协议时，无音频是否添加静音aac音频
-     */
-    @JSONField(name = "add_mute_audio")
-    @JsonProperty("add_mute_audio")
-    private boolean addMuteAudio;
-
-    /**
-     * mp4录制文件保存根目录，置空使用默认
-     */
-    @JSONField(name = "mp4_save_path")
-    @JsonProperty("mp4_save_path")
-    private String mp4SavePath;
-
-    /**
-     * mp4录制切片大小，单位秒
-     */
-    @JSONField(name = "mp4_max_second")
-    @JsonProperty("mp4_max_second")
-    private int mp4MaxSecond;
-
-    /**
-     * MP4录制是否当作观看者参与播放人数计数
-     */
-    @JSONField(name = "mp4_as_player")
-    @JsonProperty("mp4_as_player")
-    private boolean mp4AsPlayer;
-
-    /**
-     * hls文件保存保存根目录，置空使用默认
-     */
-    @JSONField(name = "hls_save_path")
-    @JsonProperty("hls_save_path")
-    private String hlsSavePath;
-
-    /**
-     * 该流是否开启时间戳覆盖(0:绝对时间戳/1:系统时间戳/2:相对时间戳)
-     */
-    @JSONField(name = "modify_stamp")
-    @JsonProperty("modify_stamp")
-    private int modifyStamp;
-
-    /**
-     * 断连续推延时，单位毫秒，置空使用配置文件默认值
-     */
-    @JSONField(name = "continue_push_ms")
-    @JsonProperty("continue_push_ms")
-    private long continuePushMs;
-
-    /**
-     * 无人观看是否自动关闭流(不触发无人观看hook)
-     */
-    @JSONField(name = "auto_close")
-    @JsonProperty("auto_close")
-    private boolean autoClose;
-
-    /**
-     * 是否修改流id, 通过此参数可以自定义流id(譬如替换ssrc)
-     */
-    @JSONField(name = "stream_replace")
-    @JsonProperty("stream_replace")
-    private String streamReplace;
-
-    public HookResultForOnPublish(int code, String msg) {
-        setCode(code);
-        setMsg(msg);
+    public static HookResultForOnPublish success() {
+        return HookResultForOnPublish.builder()
+                .code(0).msg("")
+                .build();
     }
 
-    public static HookResultForOnPublish SUCCESS() {
-        return new HookResultForOnPublish(0, "success");
-    }
 }
