@@ -21,8 +21,12 @@ public record HookResultForOnRtspRealm(
         this(0, realm);
     }
 
-    public static HookResultForOnRtspRealm success() {
+    public static HookResultForOnRtspRealm noAuthRequired() {
         return new HookResultForOnRtspRealm("");
+    }
+
+    public static HookResultForOnRtspRealm realm(String realm) {
+        return new HookResultForOnRtspRealm(realm);
     }
 
 }

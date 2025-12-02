@@ -9,7 +9,7 @@ import lombok.With;
 /**
  * ZLM Hook 回调结果 - 推流鉴权
  *
- * @param code           错误代码，0表示成功
+ * @param code           错误代码，0 表示成功
  * @param msg            错误提示信息
  * @param enableHls      是否生成 hls-ts
  * @param enableHlsFmp4  是否生成 hls-fmp4
