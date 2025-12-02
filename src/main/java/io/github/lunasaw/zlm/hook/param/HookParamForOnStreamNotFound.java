@@ -31,7 +31,7 @@ public record HookParamForOnStreamNotFound(
         @JsonProperty("params") String params,
         @JsonProperty("port") int port,
         @JsonProperty("schema") Schema schema,
-        @JsonProperty("schema") Protocol protocol,
+        @JsonProperty("protocol") Protocol protocol,
         @JsonProperty("stream") String stream,
         @JsonProperty("vhost") String vhost
 ) {
