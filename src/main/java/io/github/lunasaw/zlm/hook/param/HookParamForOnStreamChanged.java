@@ -49,5 +49,5 @@ public record HookParamForOnStreamChanged(
         @JsonProperty("readerCount") Integer readerCount,
         @JsonProperty("totalReaderCount") Integer totalReaderCount,
         @JsonProperty("tracks") List<StreamTrack> tracks
-) {
+) implements StreamHookParam {
 }

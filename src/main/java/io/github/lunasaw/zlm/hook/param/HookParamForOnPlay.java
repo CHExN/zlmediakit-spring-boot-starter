@@ -31,5 +31,5 @@ public record HookParamForOnPlay(
         @JsonProperty("protocol") Protocol protocol,
         @JsonProperty("stream") String stream,
         @JsonProperty("vhost") String vhost
-) {
+) implements StreamHookParam {
 }

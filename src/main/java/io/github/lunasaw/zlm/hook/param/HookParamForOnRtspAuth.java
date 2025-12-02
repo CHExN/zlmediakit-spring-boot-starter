@@ -39,5 +39,5 @@ public record HookParamForOnRtspAuth(
         @JsonProperty("stream") String stream,
         @JsonProperty("user_name") String username,
         @JsonProperty("vhost") String vhost
-) {
+) implements StreamHookParam {
 }

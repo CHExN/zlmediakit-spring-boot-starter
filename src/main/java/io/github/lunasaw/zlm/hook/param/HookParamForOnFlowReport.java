@@ -39,5 +39,5 @@ public record HookParamForOnFlowReport(
         @JsonProperty("ip") String ip,
         @JsonProperty("port") int port,
         @JsonProperty("id") String id
-) {
+) implements StreamHookParam {
 }

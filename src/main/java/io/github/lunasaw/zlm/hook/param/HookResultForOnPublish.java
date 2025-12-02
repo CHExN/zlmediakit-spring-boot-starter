@@ -77,4 +77,16 @@ public record HookResultForOnPublish(
                 .build();
     }
 
+    public static HookResultForOnPublish fail() {
+        return HookResultForOnPublish.builder()
+                .code(1).msg("")
+                .build();
+    }
+
+    public static HookResultForOnPublish fail(String msg) {
+        return HookResultForOnPublish.builder()
+                .code(1).msg(msg)
+                .build();
+    }
+
 }
