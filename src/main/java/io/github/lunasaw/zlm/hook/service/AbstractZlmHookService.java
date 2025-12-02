@@ -1,14 +1,12 @@
 package io.github.lunasaw.zlm.hook.service;
 
 import io.github.lunasaw.zlm.hook.param.*;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * ZLM Hook 服务抽象实现
  *
  * @author CHEaN
  */
-@Slf4j
 public abstract class AbstractZlmHookService implements ZlmHookService {
 
     @Override

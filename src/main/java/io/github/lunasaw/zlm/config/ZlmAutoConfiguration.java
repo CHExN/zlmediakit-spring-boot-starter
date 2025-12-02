@@ -89,8 +89,7 @@ public class ZlmAutoConfiguration {
      */
     @Bean
     @ConditionalOnProperty(prefix = "zlm", name = "hook-enable", havingValue = "true")
-    public ZlmHook zlmHookAPI(ZlmHookService zlmHookService,
-                              @Qualifier("zlmTaskExecutor") AsyncTaskExecutor executor) {
+    public ZlmHook zlmHookAPI(ZlmHookService zlmHookService, @Qualifier("zlmTaskExecutor") AsyncTaskExecutor executor) {
         return new ZlmHook(zlmHookService, executor);
     }
 

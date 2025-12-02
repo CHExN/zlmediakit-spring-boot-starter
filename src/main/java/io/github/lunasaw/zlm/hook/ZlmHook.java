@@ -8,8 +8,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,14 +22,18 @@ import java.util.function.Function;
  * @author CHEaN
  */
 @Slf4j
-@RequiredArgsConstructor
 @Tag(name = "ZLM Hook", description = "ZLMediaKit 钩子回调接口，用于处理各种媒体流事件")
-@ResponseBody
+@RestController
 @RequestMapping("/zlm/hook")
 public class ZlmHook {
 
     private final ZlmHookService zlmHookService;
     private final AsyncTaskExecutor executor;
+
+    public ZlmHook(ZlmHookService zlmHookService, @Qualifier("zlmTaskExecutor") AsyncTaskExecutor executor) {
+        this.zlmHookService = zlmHookService;
+        this.executor = executor;
+    }
 
     @Operation(summary = "流量统计事件", description = "流量统计事件，播放器或推流器断开时并且耗用流量超过特定阈值时会触发此事件；此事件对回复不敏感")
     @ApiResponse(responseCode = "200", description = "处理成功", content = @Content(schema = @Schema(implementation = HookResult.class)))
@@ -159,50 +163,50 @@ public class ZlmHook {
     }
 
     /**
-     * 处理同步Hook事件的通用方法
+     * 处理同步 Hook 事件的通用方法
      *
-     * @param hookName Hook事件名称，用于日志输出
-     * @param param    Hook参数
-     * @param function Hook处理函数
+     * @param hookName Hook 事件名称，用于日志输出
+     * @param param    Hook 参数
+     * @param function Hook 处理函数
      * @param <T>      参数类型
      * @param <R>      返回类型
      * @return Hook响应结果
      */
     private <T, R> R handleSyncHookEvent(String hookName, T param, Function<T, R> function) {
         try {
-            log.info("{}::param = {}", hookName, param);
+            log.trace("{} param = {}", hookName, param);
             R result = function.apply(param);
-            log.info("{} success, result = {}", hookName, result);
+            log.trace("{} success, result = {}", hookName, result);
             return result;
         } catch (Exception e) {
-            log.error("{} fail, param = {}", hookName, param, e);
+            log.trace("{} fail, param = {}", hookName, param, e);
             throw e;
         }
     }
 
     /**
-     * 处理异步Hook事件的通用方法
+     * 处理异步 Hook 事件的通用方法
      *
-     * @param hookName Hook事件名称，用于日志输出
-     * @param param    Hook参数
-     * @param consumer Hook处理函数
+     * @param hookName Hook 事件名称，用于日志输出
+     * @param param    Hook 参数
+     * @param consumer Hook 处理函数
      * @param <T>      参数类型
-     * @return Hook响应结果（异步处理总是返回SUCCESS）
+     * @return Hook响应结果（异步处理总是返回 SUCCESS）
      */
     private <T> HookResult handleAsyncHookEvent(String hookName, T param, Consumer<T> consumer) {
         try {
-            log.info("{}::param = {}", hookName, param);
+            log.trace("{} param = {}", hookName, param);
             executor.execute(() -> {
                 try {
                     consumer.accept(param);
-                    log.info("{} async success", hookName);
+                    log.trace("{} async success", hookName);
                 } catch (Exception e) {
-                    log.error("{} async fail, param = {}", hookName, param, e);
+                    log.trace("{} async fail", hookName, e);
                 }
             });
             return HookResult.success();
         } catch (Exception e) {
-            log.error("{} fail, param = {}", hookName, param, e);
+            log.trace("{} fail, param = {}", hookName, param, e);
             return HookResult.success();
         }
     }

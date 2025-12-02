@@ -12,7 +12,7 @@ ZLMediaKit的Spring Boot Starter，是一个针对[ZLMediaKit](https://github.co
 API进行了完整封装，并提供了Hook事件处理机制，支持集群化管理和多种负载均衡策略，让Java开发者能够轻松集成和管理ZLMediaKit流媒体服务器。
 完整的视频平台实现：[voglander](https://github.com/lunasaw/voglander)
 
-[文档链接](https://github.com/lunasaw/zlm-spring-boot-starter/blob/master/zlm-api.md) | [API文档](https://lunasaw.github.io/zlm-spring-boot-starter/)
+[API文档](https://lunasaw.github.io/zlm-spring-boot-starter/)
 
 ## 功能特性
 
@@ -75,31 +75,20 @@ zlm:
 #### 方式一：直接调用静态方法
 
 ```java
-import io.github.lunasaw.zlm.api.service.ZlmRestService;
-import io.github.lunasaw.zlm.api.entity.ServerResponse;
-import io.github.lunasaw.zlm.api.entity.Version;
+import io.github.lunasaw.zlm.api.ZlmRestService;
+import io.github.lunasaw.zlm.entity.ServerResponse;
+import io.github.lunasaw.zlm.entity.Version;
+import io.github.lunasaw.zlm.entity.MediaData;
+import io.github.lunasaw.zlm.entity.req.MediaReq;
 
 // 获取服务器版本信息
 ServerResponse<Version> versionResponse = ZlmRestService.getVersion("http://127.0.0.1:9092", "zlm");
-System.out.
+System.out.println("ZLMediaKit版本: " + versionResponse.data().buildTime());
 
-        println("ZLMediaKit版本: "+versionResponse.getData().
-
-        getVersion());
-
-        // 获取流列表
-        ServerResponse<List<MediaData>> mediaList = ZlmRestService.getMediaList("http://127.0.0.1:9092", "zlm", new HashMap<>());
-mediaList.
-
-        getData().
-
-        forEach(media ->{
-        System.out.
-
-        println("流ID: "+media.getApp() +"/"+media.
-
-        getStream());
-        });
+// 获取流列表
+ServerResponse<List<MediaData>> mediaList = ZlmRestService.getMediaList(
+        "http://127.0.0.1:9092", "zlm", new MediaReq("rtsp", "__defaultVhost__", "live", "test"));
+mediaList.data().forEach(media -> System.out.println("流ID: " + media.app() + "/" + media.stream()));
 ```
 
 #### 方式二：使用内置API控制器
@@ -109,10 +98,12 @@ mediaList.
 ```bash
 # 获取服务器版本信息
 GET http://localhost:8080/zlm/api/version
+Header: ZLM-Node-Key: <节点key，留空则走负载均衡>
 
 # 获取流列表
 POST http://localhost:8080/zlm/api/media/list
 Content-Type: application/json
+Header: ZLM-Node-Key: <节点key，留空则走负载均衡>
 {
   "app": "live",
   "stream": ""
@@ -130,7 +121,15 @@ GET http://localhost:8080/swagger-ui.html
 - 录制管理：`/zlm/api/record/start`、`/zlm/api/record/stop`
 - RTP管理：`/zlm/api/rtp/open`、`/zlm/api/rtp/close`
 
-### 4. 实现Hook服务
+### 4. 自测与验证
+
+- 构建：`mvn -DskipTests clean package`
+- 本地运行：`mvn -DskipTests spring-boot:run -Dzlm.nodes[0].host=http://192.168.1.200:80 -Dzlm.nodes[0].secret=<你的secret>`
+- 快速验证：
+  - `curl -H "ZLM-Node-Key: <节点key或留空>" "http://localhost:8080/zlm/api/version"`
+  - `curl -X POST -H "Content-Type: application/json" -H "ZLM-Node-Key: <节点key或留空>" "http://localhost:8080/zlm/api/media/list" -d '{"app":"live","stream":"test","schema":"rtsp","vhost":"__defaultVhost__"}'`
+
+### 5. 实现Hook服务
 
 创建Hook服务实现类来处理ZLMediaKit的事件回调：
 
@@ -200,6 +199,14 @@ zlm:
       weight: 1                  # 节点权重（仅加权算法有效）
 ```
 
+## 与上游仓库的主要差异
+
+- 全量移除 fastjson2，统一使用 Jackson，所有实体改为 `record` 并补充 `@JsonProperty`，忽略未知字段，序列化/反序列化更稳健。
+- Hook、REST 请求/响应模型补齐 Javadoc，字段命名与 ZLM 返回保持一致（如 schema、ssrc、port 等）。
+- `ZlmRestService` 与 REST 实体包路径统一为 `io.github.lunasaw.zlm.entity`，对象到参数 Map 的转换由 `JsonUtils` 统一处理。
+- 多节点场景通过请求头 `ZLM-Node-Key` 指定节点；为空则按负载均衡策略自动选择。
+- 文档示例同步到 Jackson+record 的新用法，去除了对 `zlm-api.md` 的依赖。
+
 ## API功能详解
 
 ### 1. 服务器管理
@@ -207,6 +214,7 @@ zlm:
 ```java
 // 获取服务器版本
 ServerResponse<Version> version = ZlmRestService.getVersion(host, secret);
+System.out.println(version.data());
 
 // 获取服务器配置
 ServerResponse<ServerNodeConfig> config = ZlmRestService.getServerConfig(host, secret);
@@ -222,17 +230,11 @@ ServerResponse<ImportantObjectNum> statistics = ZlmRestService.getStatistic(host
 
 ```java
 // 获取流列表
-MediaReq mediaReq = new MediaReq();
-mediaReq.
-
-setApp("live");
-
+MediaReq mediaReq = new MediaReq("rtsp", "__defaultVhost__", "live", "test");
 ServerResponse<List<MediaData>> mediaList = ZlmRestService.getMediaList(host, secret, mediaReq);
 
 // 关闭指定流
-ZlmRestService.
-
-closeStream(host, secret, mediaReq);
+ZlmRestService.closeStream(host, secret, mediaReq);
 
 // 检查流是否在线
 MediaOnlineStatus status = ZlmRestService.isMediaOnline(host, secret, mediaReq);
@@ -244,178 +246,42 @@ ServerResponse<MediaInfo> mediaInfo = ZlmRestService.getMediaInfo(host, secret, 
 ### 3. 代理拉流
 
 ```java
-// 添加拉流代理
-StreamProxyItem proxyItem = new StreamProxyItem();
-proxyItem.
+// Map 方式添加拉流代理（record 构造参数较多时更方便）
+Map<String, String> proxyParams = new HashMap<>();
+proxyParams.put("vhost", "__defaultVhost__");
+proxyParams.put("app", "live");
+proxyParams.put("stream", "test");
+proxyParams.put("url", "rtmp://example.com/live/stream");
 
-setVhost("__defaultVhost__");
-proxyItem.
-
-setApp("live");
-proxyItem.
-
-setStream("test");
-proxyItem.
-
-setUrl("rtmp://example.com/live/stream");
-
-ServerResponse<StreamKey> result = ZlmRestService.addStreamProxy(host, secret, proxyItem);
-
-// 删除拉流代理
-ZlmRestService.
-
-delStreamProxy(host, secret, result.getData().
-
-getKey());
+ServerResponse<StreamKey> result = ZlmRestService.addStreamProxy(host, secret, proxyParams);
+ZlmRestService.delStreamProxy(host, secret, result.data().key());
 ```
 
-### 4. 推流管理
+### 4. 推流管理/录制/截图/RTP
 
-```java
-// 添加推流
-StreamPusherItem pusherItem = new StreamPusherItem();
-pusherItem.
-
-setSchema("rtmp");
-pusherItem.
-
-setVhost("__defaultVhost__");
-pusherItem.
-
-setApp("live");
-pusherItem.
-
-setStream("test");
-pusherItem.
-
-setDst_url("rtmp://push.example.com/live/stream");
-
-ServerResponse<StreamKey> pushResult = ZlmRestService.addStreamPusherProxy(host, secret, pusherItem);
-```
-
-### 5. 录制功能
-
-```java
-// 开始录制
-RecordReq recordReq = new RecordReq();
-recordReq.
-
-setType(0); // 0-hls, 1-mp4
-recordReq.
-
-setVhost("__defaultVhost__");
-recordReq.
-
-setApp("live");
-recordReq.
-
-setStream("test");
-ZlmRestService.
-
-startRecord(host, secret, recordReq);
-
-// 停止录制
-ZlmRestService.
-
-stopRecord(host, secret, recordReq);
-
-// 获取录制文件
-ServerResponse<Mp4RecordFile> recordFiles = ZlmRestService.getMp4RecordFile(host, secret, recordReq);
-```
-
-### 6. 截图功能
-
-```java
-// 获取流截图
-SnapshotReq snapshotReq = new SnapshotReq();
-snapshotReq.
-
-setVhost("__defaultVhost__");
-snapshotReq.
-
-setApp("live");
-snapshotReq.
-
-setStream("test");
-snapshotReq.
-
-setSavePath("/path/to/snapshot.jpg");
-
-String result = ZlmRestService.getSnap(host, secret, snapshotReq);
-```
-
-### 7. RTP服务
-
-```java
-// 创建RTP服务器
-OpenRtpServerReq rtpReq = new OpenRtpServerReq();
-rtpReq.
-
-setStream_id("test_rtp");
-rtpReq.
-
-setPort(10000);
-
-OpenRtpServerResult rtpResult = ZlmRestService.openRtpServer(host, secret, rtpReq);
-
-// 关闭RTP服务器
-ZlmRestService.
-
-closeRtpServer(host, secret, "test_rtp");
-```
+- 推流代理：使用 `addStreamPusherProxy(host, secret, Map<String,String>)`，与拉流类似传入 `vhost/app/stream/dst_url` 等字段。
+- 录制：`RecordReq` 为 record，可用 `new RecordReq("rtsp","__defaultVhost__","live","test",null,null,null,1,null,null)` 传入必要参数；对应的 `startRecord/stopRecord/isRecording` 等方法仍保持。
+- 截图：`new SnapshotReq(url, 30, 5, "/tmp/snap.jpg")`，调用 `ZlmRestService.getSnap(host, secret, snapshotReq)`。
+- RTP：`OpenRtpServerReq`、`StartSendRtpReq` 等均为 record，使用构造函数或 Map 直接调用对应方法即可。
 
 ## Hook事件详解
 
 ### Hook接口说明
 
-实现 `ZlmHookService` 接口或继承 `AbstractZlmHookService` 类来处理各种Hook事件：
+Hook 参数/返回值均为 Jackson record，位于 `io.github.lunasaw.zlm.hook.param`。继承 `AbstractZlmHookService` 按需覆盖回调即可，未实现的方法默认透传。
 
 ```java
-public interface ZlmHookService {
-    // 服务器保活事件
-    void onServerKeepLive(OnServerKeepaliveHookParam param);
+@Service
+public class CustomZlmHookService extends AbstractZlmHookService {
+    @Override
+    public HookResult onPlay(HookParamForOnPlay param) {
+        return HookResult.SUCCESS();
+    }
 
-    // 播放鉴权
-    HookResult onPlay(OnPlayHookParam param);
-
-    // 推流鉴权
-    HookResultForOnPublish onPublish(OnPublishHookParam param);
-
-    // 流状态变化
-    void onStreamChanged(OnStreamChangedHookParam param);
-
-    // 流无人观看
-    HookResultForStreamNoneReader onStreamNoneReader(OnStreamNoneReaderHookParam param);
-
-    // 流未找到
-    void onStreamNotFound(OnStreamNotFoundHookParam param);
-
-    // 服务器启动
-    void onServerStarted(ServerNodeConfig param);
-
-    // RTP推流停止
-    void onSendRtpStopped(OnSendRtpStoppedHookParam param);
-
-    // RTP服务器超时
-    void onRtpServerTimeout(OnRtpServerTimeoutHookParam param);
-
-    // HTTP访问鉴权
-    HookResultForOnHttpAccess onHttpAccess(OnHttpAccessParam param);
-
-    // RTSP Realm鉴权
-    HookResultForOnRtspRealm onRtspRealm(OnRtspRealmHookParam param);
-
-    // RTSP用户密码鉴权
-    HookResultForOnRtspAuth onRtspAuth(OnRtspAuthHookParam param);
-
-    // 流量统计
-    void onFlowReport(OnFlowReportHookParam param);
-
-    // 服务器退出
-    void onServerExited(HookParam param);
-
-    // MP4录制完成
-    void onRecordMp4(OnRecordMp4HookParam param);
+    @Override
+    public HookResultForOnPublish onPublish(HookParamForOnPublish param) {
+        return HookResultForOnPublish.SUCCESS();
+    }
 }
 ```
 
@@ -423,29 +289,9 @@ public interface ZlmHookService {
 
 不同的Hook事件需要返回不同的结果：
 
-```java
-// 基础Hook结果 - 用于播放鉴权等
-HookResult.SUCCESS();           // 允许
-HookResult.
-
-FAILED("原因");      // 拒绝
-
-// 推流鉴权结果
-HookResultForOnPublish.
-
-SUCCESS();                    // 允许推流
-HookResultForOnPublish.
-
-FAILED("推流被拒绝");         // 拒绝推流
-
-// HTTP访问鉴权结果
-HookResultForOnHttpAccess.
-
-SUCCESS();                 // 允许访问
-HookResultForOnHttpAccess.
-
-FAILED(401,"未授权");    // 拒绝访问
-```
+- `HookResult.SUCCESS()/FAILED(msg)`：基础鉴权/提示结果。
+- `HookResultForOnPublish.SUCCESS()/FAILED(msg)`：推流鉴权结果。
+- 其他专用返回值同名类下提供静态工厂方法，可在对应 record 中查看。
 
 ## 高级用法
 

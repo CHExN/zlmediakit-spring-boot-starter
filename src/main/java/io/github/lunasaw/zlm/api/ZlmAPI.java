@@ -33,7 +33,7 @@ import static io.github.lunasaw.zlm.constant.ApiConstants.HEADER_NODE_KEY;
 @Slf4j
 @RequiredArgsConstructor
 @Tag(name = "ZLM 媒体服务器管理", description = "ZLMediaKit 流媒体服务器管理相关接口")
-@ResponseBody
+@RestController
 @RequestMapping("/zlm/api")
 public class ZlmAPI {
 
