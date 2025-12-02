@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum Schema {
     RTSP("rtsp"),
     RTMP("rtmp"),
+    RTP("rtp"),
     HLS("hls"),
     FMP4("fmp4"),
     TS("ts"),
