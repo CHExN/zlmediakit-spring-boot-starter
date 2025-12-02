@@ -6,7 +6,7 @@
 
     <groupId>io.github.lunasaw</groupId>
     <artifactId>zlmediakit-spring-boot-starter</artifactId>
-    <version>${zlmediakit-spring-boot-starter.version}</version>
+    <version>1.0.0</version>
 
     <name>zlmediakit-spring-boot-starter</name>
     <description>ZLMediaKit restful api and hook starter</description>
@@ -15,9 +15,8 @@
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.5.3</spring-boot.version>
-        <app.profiles>${project.name}</app.profiles>
-        <zlmediakit-spring-boot-starter.version>1.0.0</zlmediakit-spring-boot-starter.version>
     </properties>
 
     <developers>
@@ -161,6 +160,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
             </plugin>
         </plugins>
     </build>
