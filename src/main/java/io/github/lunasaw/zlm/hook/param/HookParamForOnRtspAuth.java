@@ -22,6 +22,7 @@ import io.github.lunasaw.zlm.enums.Schema;
  * @param stream        流 ID
  * @param username      播放用户名
  * @param vhost         流虚拟主机
+ * @author CHEaN
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -39,5 +40,5 @@ public record HookParamForOnRtspAuth(
         @JsonProperty("stream") String stream,
         @JsonProperty("user_name") String username,
         @JsonProperty("vhost") String vhost
-) implements StreamHookParam {
+) implements HookParam, HookParamForStream {
 }

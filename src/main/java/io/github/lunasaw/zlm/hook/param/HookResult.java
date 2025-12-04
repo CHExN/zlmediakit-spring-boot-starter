@@ -1,7 +1,6 @@
 package io.github.lunasaw.zlm.hook.param;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
 
 /**
  * ZLM Hook 回调结果 - 通用
@@ -9,7 +8,6 @@ import lombok.Builder;
  * @param code 错误代码，0 表示成功
  * @param msg  错误提示信息
  */
-@Builder
 public record HookResult(
         @JsonProperty("code") int code,
         @JsonProperty("msg") String msg

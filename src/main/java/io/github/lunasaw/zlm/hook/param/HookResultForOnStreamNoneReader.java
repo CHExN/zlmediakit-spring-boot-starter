@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @param code  返回码 (0: 成功，!0: 失败)
  * @param close 是否关闭无人观看的流 (true: 关闭，false: 不关闭)
+ * @author CHEaN
  */
 public record HookResultForOnStreamNoneReader(
         @JsonProperty("code") int code,
@@ -14,10 +15,10 @@ public record HookResultForOnStreamNoneReader(
 ) {
 
     /**
-     * 默认返回：关闭无人观看的流。
+     * 不关闭无人观看的流。
      */
-    public static HookResultForOnStreamNoneReader success() {
-        return new HookResultForOnStreamNoneReader(0, true);
+    public static HookResultForOnStreamNoneReader doNotClose() {
+        return new HookResultForOnStreamNoneReader(0, false);
     }
 
 }

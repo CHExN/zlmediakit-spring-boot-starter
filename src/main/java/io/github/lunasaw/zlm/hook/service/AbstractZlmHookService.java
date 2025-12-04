@@ -94,11 +94,11 @@ public abstract class AbstractZlmHookService implements ZlmHookService {
     /**
      * {@inheritDoc}
      *
-     * @return {@link HookResultForOnStreamNoneReader#success()}
+     * @return {@link HookResultForOnStreamNoneReader#doNotClose()}
      */
     @Override
     public HookResultForOnStreamNoneReader onStreamNoneReader(HookParamForOnStreamNoneReader param) {
-        return HookResultForOnStreamNoneReader.success();
+        return HookResultForOnStreamNoneReader.doNotClose();
     }
 
     /**

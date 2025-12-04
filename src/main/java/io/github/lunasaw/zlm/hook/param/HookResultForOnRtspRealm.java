@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @param code  错误代码，固定返回 0
  * @param realm RTSP 鉴权 Realm，空字符串表示不需要鉴权
+ * @author CHEaN
  */
 public record HookResultForOnRtspRealm(
         @JsonProperty("code") int code,

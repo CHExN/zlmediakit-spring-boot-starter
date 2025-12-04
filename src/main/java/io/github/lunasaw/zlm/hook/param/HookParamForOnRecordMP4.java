@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param timeLen       录制时长（秒）
  * @param url           http/rtsp/rtmp 点播相对 url 路径
  * @param vhost         流虚拟主机
+ * @author CHEaN
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -33,5 +34,5 @@ public record HookParamForOnRecordMP4(
         @JsonProperty("time_len") float timeLen,
         @JsonProperty("url") String url,
         @JsonProperty("vhost") String vhost
-) {
+) implements HookParam {
 }

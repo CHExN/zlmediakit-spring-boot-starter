@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param params                        HTTP URL 参数
  * @param path                          请求访问的文件或目录
  * @param port                          HTTP 客户端端口号
+ * @author CHEaN
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -41,5 +42,5 @@ public record HookParamForOnHttpAccess(
         @JsonProperty("params") String params,
         @JsonProperty("path") String path,
         @JsonProperty("port") int port
-) {
+) implements HookParam {
 }

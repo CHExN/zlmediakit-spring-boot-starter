@@ -27,6 +27,7 @@ import io.github.lunasaw.zlm.enums.Schema;
  * @param readerCount      本协议观看人数
  * @param totalReaderCount 观看总人数，包括 hls/rtsp/rtmp/http-flv/ws-flv/rtc
  * @param tracks           流的媒体轨道信息列表
+ * @author CHEaN
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -49,5 +50,5 @@ public record HookParamForOnStreamChanged(
         @JsonProperty("readerCount") Integer readerCount,
         @JsonProperty("totalReaderCount") Integer totalReaderCount,
         @JsonProperty("tracks") List<StreamTrack> tracks
-) implements StreamHookParam {
+) implements HookParam, HookParamForStream {
 }

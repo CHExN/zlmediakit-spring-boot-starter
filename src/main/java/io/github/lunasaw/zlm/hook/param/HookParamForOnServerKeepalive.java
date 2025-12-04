@@ -12,4 +12,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record HookParamForOnServerKeepalive(
         @JsonProperty("mediaServerId") String mediaServerId,
         @JsonProperty("data") ServerKeepaliveData data
-) { }
+) implements HookParam {
+}

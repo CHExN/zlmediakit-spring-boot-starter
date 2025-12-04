@@ -22,6 +22,7 @@ import io.github.lunasaw.zlm.enums.Schema;
  * @param ip            客户端 IP
  * @param port          客户端端口号
  * @param id            TCP 链接唯一 ID
+ * @author CHEaN
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -39,5 +40,5 @@ public record HookParamForOnFlowReport(
         @JsonProperty("ip") String ip,
         @JsonProperty("port") int port,
         @JsonProperty("id") String id
-) implements StreamHookParam {
+) implements HookParam, HookParamForStream {
 }

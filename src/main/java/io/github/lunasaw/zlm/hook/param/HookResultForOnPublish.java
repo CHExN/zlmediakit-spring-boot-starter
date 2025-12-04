@@ -33,6 +33,7 @@ import lombok.With;
  * @param continuePushMs 断连续推延时
  * @param autoClose      无人观看是否自动关闭流
  * @param streamReplace  自定义流 ID（可替换 ssrc）
+ * @author CHEaN
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)

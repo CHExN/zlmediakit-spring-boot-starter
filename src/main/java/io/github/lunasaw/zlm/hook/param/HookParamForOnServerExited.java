@@ -6,5 +6,5 @@ package io.github.lunasaw.zlm.hook.param;
  * @param mediaServerId 服务器 ID
  * @author CHEaN
  */
-public record HookParamForOnServerExited(String mediaServerId) {
+public record HookParamForOnServerExited(String mediaServerId) implements HookParam {
 }

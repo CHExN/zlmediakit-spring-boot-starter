@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param ssrc          SSRC
  * @param streamId      流 ID
  * @param tcpMode       TCP 模式
+ * @author CHEaN
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -23,5 +24,5 @@ public record HookParamForOnRtpServerTimeout(
         @JsonProperty("ssrc") int ssrc,
         @JsonProperty("stream_id") String streamId,
         @JsonProperty("tcp_mode") int tcpMode
-) {
+) implements HookParam {
 }
