@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.hook.param;
+package io.github.lunasaw.zlm.hook.entity;
 
 /**
  * ZLM Hook 回调参数 - 服务器退出 (on_server_exited)
@@ -6,5 +6,5 @@ package io.github.lunasaw.zlm.hook.param;
  * @param mediaServerId 服务器 ID
  * @author CHEaN
  */
-public record HookParamForOnServerExited(String mediaServerId) {
+public record HookParamForOnServerExited(String mediaServerId) implements HookParam {
 }

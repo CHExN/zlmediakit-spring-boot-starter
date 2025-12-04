@@ -1,6 +1,6 @@
 package io.github.lunasaw.zlm.hook.service;
 
-import io.github.lunasaw.zlm.hook.param.*;
+import io.github.lunasaw.zlm.hook.entity.*;
 
 /**
  * ZLM Hook 服务抽象实现
@@ -28,11 +28,11 @@ public abstract class AbstractZlmHookService implements ZlmHookService {
     /**
      * {@inheritDoc}
      *
-     * @return {@link HookResult#success()}
+     * @return {@link HookResultForGeneral#success()}
      */
     @Override
-    public HookResult onPlay(HookParamForOnPlay param) {
-        return HookResult.success();
+    public HookResultForGeneral onPlay(HookParamForOnPlay param) {
+        return HookResultForGeneral.success();
     }
 
     /**
@@ -76,11 +76,11 @@ public abstract class AbstractZlmHookService implements ZlmHookService {
     /**
      * {@inheritDoc}
      *
-     * @return {@link HookResult#success()}
+     * @return {@link HookResultForGeneral#success()}
      */
     @Override
-    public HookResult onShellLogin(HookParamForOnShellLogin param) {
-        return HookResult.success();
+    public HookResultForGeneral onShellLogin(HookParamForOnShellLogin param) {
+        return HookResultForGeneral.success();
     }
 
     /**
@@ -94,11 +94,11 @@ public abstract class AbstractZlmHookService implements ZlmHookService {
     /**
      * {@inheritDoc}
      *
-     * @return {@link HookResultForOnStreamNoneReader#success()}
+     * @return {@link HookResultForOnStreamNoneReader#doNotClose()}
      */
     @Override
     public HookResultForOnStreamNoneReader onStreamNoneReader(HookParamForOnStreamNoneReader param) {
-        return HookResultForOnStreamNoneReader.success();
+        return HookResultForOnStreamNoneReader.doNotClose();
     }
 
     /**

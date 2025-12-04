@@ -1,6 +1,6 @@
 package io.github.lunasaw.zlm.hook.service;
 
-import io.github.lunasaw.zlm.hook.param.*;
+import io.github.lunasaw.zlm.hook.entity.*;
 
 /**
  * ZLM Hook 服务接口
@@ -29,7 +29,7 @@ public interface ZlmHookService {
      * 如果流不存在，那么先触发 on_play 事件然后触发 on_stream_not_found 事件。
      * 播放 rtsp 流时，如果该流启动了 rtsp 专属鉴权(on_rtsp_realm)那么将不再触发 on_play 事件。
      */
-    HookResult onPlay(HookParamForOnPlay param);
+    HookResultForGeneral onPlay(HookParamForOnPlay param);
 
     /**
      * rtsp/rtmp/rtp 推流鉴权事件。
@@ -59,7 +59,7 @@ public interface ZlmHookService {
      * Shell 登录鉴权，ZLMediaKit 提供简单的 telnet 调试方式。
      * 使用 <code>telnet 127.0.0.1 9000</code> 能进入 MediaServer 进程的 shell 界面。
      */
-    HookResult onShellLogin(HookParamForOnShellLogin param);
+    HookResultForGeneral onShellLogin(HookParamForOnShellLogin param);
 
     /**
      * rtsp/rtmp 流注册或注销时触发此事件。

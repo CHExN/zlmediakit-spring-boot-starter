@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.hook.param;
+package io.github.lunasaw.zlm.hook.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -12,4 +12,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record HookParamForOnServerKeepalive(
         @JsonProperty("mediaServerId") String mediaServerId,
         @JsonProperty("data") ServerKeepaliveData data
-) { }
+) implements HookParam {
+}

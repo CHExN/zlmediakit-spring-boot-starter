@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.hook.param;
+package io.github.lunasaw.zlm.hook.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param err    不允许访问的错误提示，允许访问请置空
  * @param path   该客户端能访问或被禁止的顶端目录，如果为空字符串，则表述为当前目录
  * @param second 本次授权结果的有效期（秒）
+ * @author CHEaN
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)

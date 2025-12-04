@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.hook.param;
+package io.github.lunasaw.zlm.hook.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -10,6 +10,7 @@ import lombok.Builder;
  * @param msg       错误提示信息
  * @param encrypted 是否加密
  * @param passwd    用户密码明文或摘要 (md5(username:realm:password))
+ * @author CHEaN
  */
 @Builder
 public record HookResultForOnRtspAuth(

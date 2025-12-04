@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.hook.param;
+package io.github.lunasaw.zlm.hook.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -19,6 +19,7 @@ import io.github.lunasaw.zlm.enums.Schema;
  * @param protocol      传输协议（rtsp/rtmp/rtsps/rtmps/rtc/srt/rtp/tcp/udp）
  * @param stream        流 ID
  * @param vhost         流虚拟主机
+ * @author CHEaN
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -33,5 +34,5 @@ public record HookParamForOnPublish(
         @JsonProperty("protocol") Protocol protocol,
         @JsonProperty("stream") String stream,
         @JsonProperty("vhost") String vhost
-) implements StreamHookParam {
+) implements HookParam, HookParamForStream {
 }

@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.hook.param;
+package io.github.lunasaw.zlm.hook.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -15,15 +15,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param width        视频宽度
  */
 public record StreamTrack(
+        // 公共字段
         @JsonProperty("channels") Integer channels,
         @JsonProperty("codec_id") Integer codecId,
         @JsonProperty("codec_id_name") String codecIdName,
         @JsonProperty("codec_type") Integer codecType,
         @JsonProperty("ready") Boolean ready,
 
+        // 音频专有字段
         @JsonProperty("sample_bit") Integer sampleBit,
         @JsonProperty("sample_rate") Integer sampleRate,
 
+        // 视频专有字段
         @JsonProperty("fps") Integer fps,
         @JsonProperty("height") Integer height,
         @JsonProperty("width") Integer width

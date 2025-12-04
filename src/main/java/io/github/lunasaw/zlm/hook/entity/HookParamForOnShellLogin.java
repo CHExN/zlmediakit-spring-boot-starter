@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.hook.param;
+package io.github.lunasaw.zlm.hook.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param passwd        telnet 终端登录用户密码
  * @param port          telnet 终端端口号
  * @param username      telnet 终端登录用户名
+ * @author CHEaN
  */
 public record HookParamForOnShellLogin(
         @JsonProperty("mediaServerId") String mediaServerId,
@@ -19,5 +20,5 @@ public record HookParamForOnShellLogin(
         @JsonProperty("passwd") String passwd,
         @JsonProperty("port") int port,
         @JsonProperty("user_name") String username
-) {
+) implements HookParam {
 }
