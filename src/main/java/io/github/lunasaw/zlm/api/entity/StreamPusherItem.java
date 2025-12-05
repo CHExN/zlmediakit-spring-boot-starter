@@ -34,7 +34,7 @@ public record StreamPusherItem(
 
     public StreamPusherItem {
         Assert.notNull(schema, "schema must not be null");
-        Assert.notNull(vHost, "vHost must not be null");
+        Assert.notNull(vHost, "vhost must not be null");
         Assert.notNull(app, "app must not be null");
         Assert.notNull(stream, "stream must not be null");
         Assert.notNull(dstUrl, "dstUrl must not be null");

@@ -7,7 +7,7 @@ import org.springframework.util.Assert;
 /**
  * 拉流代理配置
  *
- * @param vHost         虚拟主机，例如 __defaultVhost__
+ * @param vhost         虚拟主机，例如 __defaultVhost__
  * @param app           应用名
  * @param stream        流 ID
  * @param url           拉流地址
@@ -39,7 +39,7 @@ import org.springframework.util.Assert;
  */
 @Builder
 public record StreamProxyItem(
-        @JsonProperty("vhost") String vHost,
+        @JsonProperty("vhost") String vhost,
         @JsonProperty("app") String app,
         @JsonProperty("stream") String stream,
         @JsonProperty("url") String url,
@@ -71,7 +71,7 @@ public record StreamProxyItem(
 ) {
 
     public StreamProxyItem {
-        Assert.notNull(vHost, "vHost must not be null");
+        Assert.notNull(vhost, "vhost must not be null");
         Assert.notNull(app, "app must not be null");
         Assert.notNull(stream, "stream must not be null");
         Assert.notNull(url, "url must not be null");
