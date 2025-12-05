@@ -1,37 +1,42 @@
 package io.github.lunasaw.zlm.config;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * ZLM 节点配置
- * @author luna
- * @version 1.0
+ * ZLM 服务器节点配置
+ *
+ * @author CHEaN
  */
 @Data
+@NoArgsConstructor
 public class ZlmNode {
 
     /**
-     * The id of this node.
+     * 服务器节点 ID
      */
-    private String serverId = "zlm";
-
+    private String nodeId = "zlm";
     /**
-     * The host of this node. eg: <a href="http://127.0.0.1">node</a>
+     * 服务器 API 请求地址
      */
     private String host = "http://127.0.0.1";
-
     /**
-     * The secret of this host.
+     * 服务器 API 密钥
      */
     private String secret;
-
     /**
-     * Whether enable this host.
-     */
-    private boolean enabled = true;
-
-    /**
-     * The weight of this host.
+     * 节点权重
      */
     private int weight = 100;
+
+    /**
+     * 复制构造函数
+     */
+    public ZlmNode(ZlmNode node) {
+        this.nodeId = node.nodeId;
+        this.host = node.host;
+        this.secret = node.secret;
+        this.weight = node.weight;
+    }
+
 }

@@ -75,18 +75,18 @@ zlm:
 #### 方式一：直接调用静态方法
 
 ```java
-import io.github.lunasaw.zlm.api.ZlmRestService;
+import io.github.lunasaw.zlm.api.ZlmHttpClient;
 import io.github.lunasaw.zlm.entity.ServerResponse;
 import io.github.lunasaw.zlm.entity.Version;
 import io.github.lunasaw.zlm.entity.MediaData;
 import io.github.lunasaw.zlm.entity.req.MediaReq;
 
 // 获取服务器版本信息
-ServerResponse<Version> versionResponse = ZlmRestService.getVersion("http://127.0.0.1:9092", "zlm");
+ServerResponse<Version> versionResponse = ZlmHttpClient.getVersion("http://127.0.0.1:9092", "zlm");
 System.out.println("ZLMediaKit版本: " + versionResponse.data().buildTime());
 
 // 获取流列表
-ServerResponse<List<MediaData>> mediaList = ZlmRestService.getMediaList(
+ServerResponse<List<MediaData>> mediaList = ZlmHttpClient.getMediaList(
         "http://127.0.0.1:9092", "zlm", new MediaReq("rtsp", "__defaultVhost__", "live", "test"));
 mediaList.data().forEach(media -> System.out.println("流ID: " + media.app() + "/" + media.stream()));
 ```
@@ -120,6 +120,41 @@ GET http://localhost:8080/swagger-ui.html
 - 代理管理：`/zlm/api/proxy/add`、`/zlm/api/proxy/delete`
 - 录制管理：`/zlm/api/record/start`、`/zlm/api/record/stop`
 - RTP管理：`/zlm/api/rtp/open`、`/zlm/api/rtp/close`
+
+#### 方式三：注入 ZlmClientManager（推荐给 Spring Boot 应用内调用）
+
+Starter 会自动注入 `ZlmClientManager`，按节点 ID 获取或按负载均衡选择客户端，无需自己拼 host/secret：
+
+```java
+import io.github.lunasaw.zlm.api.client.ZlmClientManager;
+import io.github.lunasaw.zlm.api.client.ZlmClient;
+import io.github.lunasaw.zlm.api.entity.StreamFilter;
+import org.springframework.stereotype.Service;
+
+@Service
+public class DemoService {
+    private final ZlmClientManager clientManager;
+
+    public DemoService(ZlmClientManager clientManager) {
+        this.clientManager = clientManager;
+    }
+
+    public void demo() {
+        // 指定节点
+        ZlmClient client = clientManager.getClient("zlm-node-1");
+        client.getMediaList(StreamFilter.builder()
+                .schema("rtsp")
+                .vhost("__defaultVhost__")
+                .app("live")
+                .stream("test")
+                .build());
+
+        // 走负载均衡
+        ZlmClient balanced = clientManager.selectClient();
+        balanced.version();
+    }
+}
+```
 
 ### 4. 自测与验证
 
@@ -203,7 +238,7 @@ zlm:
 
 - 全量移除 fastjson2，统一使用 Jackson，所有实体改为 `record` 并补充 `@JsonProperty`，忽略未知字段，序列化/反序列化更稳健。
 - Hook、REST 请求/响应模型补齐 Javadoc，字段命名与 ZLM 返回保持一致（如 schema、ssrc、port 等）。
-- `ZlmRestService` 与 REST 实体包路径统一为 `io.github.lunasaw.zlm.entity`，对象到参数 Map 的转换由 `JsonUtils` 统一处理。
+- `ZlmHttpClient` 与 REST 实体包路径统一为 `io.github.lunasaw.zlm.entity`，对象到参数 Map 的转换由 `JsonUtils` 统一处理。
 - 多节点场景通过请求头 `ZLM-Node-Key` 指定节点；为空则按负载均衡策略自动选择。
 - 文档示例同步到 Jackson+record 的新用法，去除了对 `zlm-api.md` 的依赖。
 
@@ -213,17 +248,17 @@ zlm:
 
 ```java
 // 获取服务器版本
-ServerResponse<Version> version = ZlmRestService.getVersion(host, secret);
+ServerResponse<Version> version = ZlmHttpClient.getVersion(host, secret);
 System.out.println(version.data());
 
 // 获取服务器配置
-ServerResponse<ServerNodeConfig> config = ZlmRestService.getServerConfig(host, secret);
+ServerResponse<ServerNodeConfig> config = ZlmHttpClient.getServerConfig(host, secret);
 
 // 获取API列表
-ServerResponse<List<String>> apiList = ZlmRestService.getApiList(host, secret);
+ServerResponse<List<String>> apiList = ZlmHttpClient.getApiList(host, secret);
 
 // 获取服务器统计信息
-ServerResponse<ImportantObjectNum> statistics = ZlmRestService.getStatistic(host, secret);
+ServerResponse<ImportantObjectNum> statistics = ZlmHttpClient.getStatistic(host, secret);
 ```
 
 ### 2. 流媒体管理
@@ -231,16 +266,16 @@ ServerResponse<ImportantObjectNum> statistics = ZlmRestService.getStatistic(host
 ```java
 // 获取流列表
 MediaReq mediaReq = new MediaReq("rtsp", "__defaultVhost__", "live", "test");
-ServerResponse<List<MediaData>> mediaList = ZlmRestService.getMediaList(host, secret, mediaReq);
+ServerResponse<List<MediaData>> mediaList = ZlmHttpClient.getMediaList(host, secret, mediaReq);
 
 // 关闭指定流
-ZlmRestService.closeStream(host, secret, mediaReq);
+ZlmHttpClient.closeStream(host, secret, mediaReq);
 
 // 检查流是否在线
-MediaOnlineStatus status = ZlmRestService.isMediaOnline(host, secret, mediaReq);
+MediaOnlineStatus status = ZlmHttpClient.isMediaOnline(host, secret, mediaReq);
 
 // 获取流详细信息
-ServerResponse<MediaInfo> mediaInfo = ZlmRestService.getMediaInfo(host, secret, mediaReq);
+ServerResponse<MediaInfo> mediaInfo = ZlmHttpClient.getMediaInfo(host, secret, mediaReq);
 ```
 
 ### 3. 代理拉流
@@ -253,15 +288,15 @@ proxyParams.put("app", "live");
 proxyParams.put("stream", "test");
 proxyParams.put("url", "rtmp://example.com/live/stream");
 
-ServerResponse<StreamKey> result = ZlmRestService.addStreamProxy(host, secret, proxyParams);
-ZlmRestService.delStreamProxy(host, secret, result.data().key());
+ServerResponse<StreamKey> result = ZlmHttpClient.addStreamProxy(host, secret, proxyParams);
+ZlmHttpClient.delStreamProxy(host, secret, result.data().key());
 ```
 
 ### 4. 推流管理/录制/截图/RTP
 
 - 推流代理：使用 `addStreamPusherProxy(host, secret, Map<String,String>)`，与拉流类似传入 `vhost/app/stream/dst_url` 等字段。
 - 录制：`RecordReq` 为 record，可用 `new RecordReq("rtsp","__defaultVhost__","live","test",null,null,null,1,null,null)` 传入必要参数；对应的 `startRecord/stopRecord/isRecording` 等方法仍保持。
-- 截图：`new SnapshotReq(url, 30, 5, "/tmp/snap.jpg")`，调用 `ZlmRestService.getSnap(host, secret, snapshotReq)`。
+- 截图：`new SnapshotReq(url, 30, 5, "/tmp/snap.jpg")`，调用 `ZlmHttpClient.getSnap(host, secret, snapshotReq)`。
 - RTP：`OpenRtpServerReq`、`StartSendRtpReq` 等均为 record，使用构造函数或 Map 直接调用对应方法即可。
 
 ## Hook事件详解
@@ -320,8 +355,8 @@ public class DefaultNodeSupplier implements NodeSupplier {
     }
 
     @Override
-    public ZlmNode getNode(String serverId) {
-        return zlmProperties.getNodeMap().get(serverId);
+    public ZlmNode getNode(String nodeId) {
+        return zlmProperties.getNodeMap().get(nodeId);
     }
 }
 ```
@@ -352,8 +387,8 @@ public class DatabaseNodeSupplier implements NodeSupplier {
     }
 
     @Override
-    public ZlmNode getNode(String serverId) {
-        NodeEntity entity = nodeRepository.findByServerId(serverId);
+    public ZlmNode getNode(String nodeId) {
+        NodeEntity entity = nodeRepository.findByServerId(nodeId);
         return entity != null ? convertToZlmNode(entity) : null;
     }
 
@@ -395,10 +430,10 @@ public class EurekaNodeSupplier implements NodeSupplier {
     }
 
     @Override
-    public ZlmNode getNode(String serverId) {
+    public ZlmNode getNode(String nodeId) {
         List<ServiceInstance> instances = discoveryClient.getInstances("zlm-service");
         return instances.stream()
-                .filter(instance -> serverId.equals(instance.getInstanceId()))
+                .filter(instance -> nodeId.equals(instance.getInstanceId()))
                 .findFirst()
                 .map(this::convertToZlmNode)
                 .orElse(null);

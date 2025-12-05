@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * 源套接字信息。
+ * 客户端和服务器网络信息
  *
  * @param identifier 连接标识
  * @param localIp    本地 IP

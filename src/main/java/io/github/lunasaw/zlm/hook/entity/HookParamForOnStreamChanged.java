@@ -5,6 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.github.lunasaw.zlm.api.entity.OriginSock;
 import io.github.lunasaw.zlm.enums.OriginType;
 import io.github.lunasaw.zlm.enums.Schema;
 
@@ -43,7 +44,7 @@ public record HookParamForOnStreamChanged(
         @JsonProperty("aliveSecond") Integer aliveSecond,
         @JsonProperty("bytesSpeed") Long bytesSpeed,
         @JsonProperty("createStamp") Long createStamp,
-        @JsonProperty("originSock") StreamOriginSock originSock,
+        @JsonProperty("originSock") OriginSock originSock,
         @JsonProperty("originType") OriginType originType,
         @JsonProperty("originTypeStr") String originTypeStr,
         @JsonProperty("originUrl") String originUrl,

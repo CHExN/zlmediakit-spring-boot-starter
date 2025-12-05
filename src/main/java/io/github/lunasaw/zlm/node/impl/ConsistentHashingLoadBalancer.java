@@ -53,8 +53,8 @@ public class ConsistentHashingLoadBalancer implements LoadBalancer {
     }
 
     @Override
-    public Type getType() {
-        return LoadBalancer.Type.CONSISTENT_HASHING;
+    public String getType() {
+        return LoadBalancer.Type.CONSISTENT_HASHING.type();
     }
 
     /**
@@ -68,11 +68,11 @@ public class ConsistentHashingLoadBalancer implements LoadBalancer {
 
         for (ZlmNode node : nodes) {
             int weight = node.getWeight();
-            String serverId = node.getServerId();
+            String nodeId = node.getNodeId();
 
             // 根据权重创建虚拟节点
             for (int i = 0; i < weight * VIRTUAL_NODE_COUNT; i++) {
-                String virtualNodeName = serverId + "#" + i;
+                String virtualNodeName = nodeId + "#" + i;
                 int hash = getHash(virtualNodeName);
                 hashRing.put(hash, node);
             }
@@ -108,14 +108,14 @@ public class ConsistentHashingLoadBalancer implements LoadBalancer {
      */
     private List<ZlmNode> getCurrentNodes() {
         if (nodeSupplier == null) {
-            log.warn("NodeSupplier未设置，无法获取节点列表");
+            log.warn("NodeSupplier 未设置，无法获取节点列表");
             return null;
         }
 
         try {
             return nodeSupplier.getNodes();
         } catch (Exception e) {
-            log.error("从NodeSupplier获取节点列表失败", e);
+            log.error("从 NodeSupplier 获取节点列表失败", e);
             return null;
         }
     }

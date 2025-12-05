@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param height       视频高度
  * @param width        视频宽度
  */
+@Deprecated // TODO 见 io.github.lunasaw.zlm.api.entity.Track，后续统一使用该实体类
 public record StreamTrack(
         // 公共字段
         @JsonProperty("channels") Integer channels,

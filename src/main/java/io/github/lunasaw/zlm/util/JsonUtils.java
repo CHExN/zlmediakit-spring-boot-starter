@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import java.io.UncheckedIOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -46,13 +47,15 @@ public final class JsonUtils {
      */
     public static Map<String, String> toStringMap(Object value) {
         if (value == null) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
-        Map<String, Object> raw = MAPPER.convertValue(value, new TypeReference<Map<String, Object>>() {
-        });
+        Map<String, Object> raw = MAPPER.convertValue(value, new TypeReference<Map<String, Object>>() {});
         return raw.entrySet().stream()
                 .filter(entry -> entry.getValue() != null)
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> String.valueOf(entry.getValue())));
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> String.valueOf(entry.getValue())
+                ));
     }
 
     public static ObjectMapper mapper() {

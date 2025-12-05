@@ -2,13 +2,12 @@ package io.github.lunasaw.zlm.node.service;
 
 import io.github.lunasaw.zlm.config.ZlmNode;
 
-import java.util.List;
-
 /**
  * ZLM 节点负载均衡服务接口
+ * <p>
  * 专注于负载均衡功能，提供节点选择服务
  *
- * @author luna
+ * @author CHEaN
  */
 public interface NodeService {
 

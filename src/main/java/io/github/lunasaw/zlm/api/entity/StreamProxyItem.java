@@ -1,20 +1,17 @@
 package io.github.lunasaw.zlm.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.github.lunasaw.zlm.util.JsonUtils;
-
-import java.util.Map;
+import lombok.Builder;
+import org.springframework.util.Assert;
 
 /**
- * 拉流代理配置。
+ * 拉流代理配置
  *
  * @param vHost         虚拟主机，例如 __defaultVhost__
  * @param app           应用名
  * @param stream        流 ID
  * @param url           拉流地址
- * @param retryCount    拉流重试次数，-1 表示无限
+ * @param retryCount    拉流重试次数，不传此参数或传值 <=0 时，则无限重试
  * @param rtpType       RTSP 拉流方式，0：tcp，1：udp，2：组播
  * @param timeoutSec    拉流超时时间（秒）
  * @param enableHls     是否转换为 hls-mpegts
@@ -31,15 +28,16 @@ import java.util.Map;
  * @param fmp4Demand    fmp4 是否按需生成
  * @param enableAudio   转协议时是否开启音频
  * @param addMuteAudio  无音频时是否补静音 AAC
- * @param mp4SavePath   mp4 录制根目录
+ * @param mp4SavePath   mp4 录制根目录，置空使用默认目录
  * @param mp4MaxSecond  mp4 切片时长（秒）
  * @param mp4AsPlayer   mp4 录制是否计入播放人数
- * @param hlsSavePath   hls 录制根目录
- * @param modifyStamp   时间戳覆盖模式
- * @param autoClose     无人观看是否自动关闭
+ * @param hlsSavePath   hls 录制根目录，置空使用默认目录
+ * @param modifyStamp   是否修改原始时间戳，默认值2；取值范围：0.采用源视频流绝对时间戳，不做任何改变;1.采用zlmediakit接收数据时的系统时间戳(有平滑处理);2.采用源视频流时间戳相对时间戳(增长量)，有做时间戳跳跃和回退矫正
+ * @param autoClose     无人观看是否自动关闭流 (不触发无人观看 Hook)
+ * @param latency       srt 延时, 单位毫秒
+ * @param passphrase    srt 拉流的密码
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder
 public record StreamProxyItem(
         @JsonProperty("vhost") String vHost,
         @JsonProperty("app") String app,
@@ -67,10 +65,16 @@ public record StreamProxyItem(
         @JsonProperty("mp4_as_player") Boolean mp4AsPlayer,
         @JsonProperty("hls_save_path") String hlsSavePath,
         @JsonProperty("modify_stamp") Integer modifyStamp,
-        @JsonProperty("auto_close") Boolean autoClose
+        @JsonProperty("auto_close") Boolean autoClose,
+        @JsonProperty("latency") String latency,
+        @JsonProperty("passphrase") String passphrase
 ) {
 
-    public Map<String, String> toMap() {
-        return JsonUtils.toStringMap(this);
+    public StreamProxyItem {
+        Assert.notNull(vHost, "vHost must not be null");
+        Assert.notNull(app, "app must not be null");
+        Assert.notNull(stream, "stream must not be null");
+        Assert.notNull(url, "url must not be null");
     }
+
 }

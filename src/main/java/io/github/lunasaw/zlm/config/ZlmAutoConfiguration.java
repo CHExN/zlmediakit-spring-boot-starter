@@ -1,7 +1,8 @@
 package io.github.lunasaw.zlm.config;
 
-import io.github.lunasaw.zlm.api.ZlmAPI;
-import io.github.lunasaw.zlm.hook.ZlmHook;
+import io.github.lunasaw.zlm.api.client.ZlmClient;
+import io.github.lunasaw.zlm.api.client.ZlmClientManager;
+import io.github.lunasaw.zlm.hook.ZlmHookController;
 import io.github.lunasaw.zlm.hook.service.ZlmHookService;
 import io.github.lunasaw.zlm.hook.service.impl.DefaultZlmHookServiceImpl;
 import io.github.lunasaw.zlm.node.LoadBalancer;
@@ -89,20 +90,8 @@ public class ZlmAutoConfiguration {
      */
     @Bean
     @ConditionalOnProperty(prefix = "zlm", name = "hook-enable", havingValue = "true")
-    public ZlmHook zlmHookAPI(ZlmHookService zlmHookService, @Qualifier("zlmTaskExecutor") AsyncTaskExecutor executor) {
-        return new ZlmHook(zlmHookService, executor);
-    }
-
-    /**
-     * ZlmAPI 控制器
-     *
-     * @param nodeSupplier NodeSupplier 实例
-     * @param nodeService  NodeService 实例
-     * @return ZlmAPI 实例
-     */
-    @Bean
-    public ZlmAPI zlmAPI(NodeSupplier nodeSupplier, NodeService nodeService) {
-        return new ZlmAPI(nodeSupplier, nodeService);
+    public ZlmHookController zlmHookAPI(ZlmHookService zlmHookService, @Qualifier("zlmTaskExecutor") AsyncTaskExecutor executor) {
+        return new ZlmHookController(zlmHookService, executor);
     }
 
     /**
@@ -131,6 +120,21 @@ public class ZlmAutoConfiguration {
     @ConditionalOnMissingBean
     public NodeSupplier nodeSupplier(ZlmProperties zlmProperties) {
         return new DefaultNodeSupplier(zlmProperties);
+    }
+
+    /**
+     * ZLM 客户端管理器
+     * <p>
+     * 提供按节点 ID/负载均衡获取 {@link ZlmClient} 的入口
+     *
+     * @param loadBalancer 负载均衡器
+     * @param nodeSupplier 节点提供器
+     * @return ZlmClientManager 实例
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public ZlmClientManager zlmClientManager(LoadBalancer loadBalancer, NodeSupplier nodeSupplier) {
+        return new ZlmClientManager(loadBalancer, nodeSupplier);
     }
 
     /**

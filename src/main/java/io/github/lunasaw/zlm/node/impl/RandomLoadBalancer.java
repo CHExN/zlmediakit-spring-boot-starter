@@ -38,8 +38,8 @@ public class RandomLoadBalancer implements LoadBalancer {
     }
 
     @Override
-    public Type getType() {
-        return LoadBalancer.Type.RANDOM;
+    public String getType() {
+        return LoadBalancer.Type.RANDOM.type();
     }
 
     /**
@@ -49,14 +49,14 @@ public class RandomLoadBalancer implements LoadBalancer {
      */
     private List<ZlmNode> getCurrentNodes() {
         if (nodeSupplier == null) {
-            log.warn("NodeSupplier未设置，无法获取节点列表");
+            log.warn("NodeSupplier 未设置，无法获取节点列表");
             return null;
         }
 
         try {
             return nodeSupplier.getNodes();
         } catch (Exception e) {
-            log.error("从NodeSupplier获取节点列表失败", e);
+            log.error("从 NodeSupplier 获取节点列表失败", e);
             return null;
         }
     }

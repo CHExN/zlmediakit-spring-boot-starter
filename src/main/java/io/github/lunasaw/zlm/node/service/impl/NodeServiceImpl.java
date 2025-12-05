@@ -2,33 +2,27 @@ package io.github.lunasaw.zlm.node.service.impl;
 
 import io.github.lunasaw.zlm.config.ZlmNode;
 import io.github.lunasaw.zlm.node.LoadBalancer;
-import io.github.lunasaw.zlm.node.NodeSupplier;
 import io.github.lunasaw.zlm.node.service.NodeService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-
-import java.util.List;
 
 /**
  * ZLM 节点服务实现类
+ * <p>
  * 整合负载均衡器和节点提供器的功能，提供统一的节点管理服务
  *
  * @author luna
  */
-@RequiredArgsConstructor
-public class NodeServiceImpl implements NodeService {
-
-    private final LoadBalancer loadBalancer;
+public record NodeServiceImpl(LoadBalancer loadBalancer) implements NodeService {
 
     @Override
     public ZlmNode getAvailableNode(String nodeKey) {
-        Assert.hasText(nodeKey, "节点 key 不能为空");
-        ZlmNode zlmNode = selectNode(nodeKey);
-        if (zlmNode != null) {
-            return zlmNode;
-        }
+        try {
+            ZlmNode zlmNode = selectNode(nodeKey);
+            if (zlmNode != null) {
+                return zlmNode;
+            }
+        } catch (IllegalArgumentException ignored) {}
+
         return selectNode();
     }
 

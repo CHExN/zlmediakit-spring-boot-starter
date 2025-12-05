@@ -36,7 +36,7 @@ public class WeightRandomLoadBalancer implements LoadBalancer {
         // 计算总权重
         int totalWeight = nodes.stream().mapToInt(ZlmNode::getWeight).sum();
         if (totalWeight <= 0) {
-            // 如果总权重为0，则随机选择
+            // 如果总权重为 0，则随机选择
             return nodes.get(random.nextInt(nodes.size()));
         }
 
@@ -56,8 +56,8 @@ public class WeightRandomLoadBalancer implements LoadBalancer {
     }
 
     @Override
-    public Type getType() {
-        return LoadBalancer.Type.WEIGHT_RANDOM;
+    public String getType() {
+        return LoadBalancer.Type.WEIGHT_RANDOM.type();
     }
 
     /**
@@ -67,14 +67,14 @@ public class WeightRandomLoadBalancer implements LoadBalancer {
      */
     private List<ZlmNode> getCurrentNodes() {
         if (nodeSupplier == null) {
-            log.warn("NodeSupplier未设置，无法获取节点列表");
+            log.warn("NodeSupplier 未设置，无法获取节点列表");
             return null;
         }
 
         try {
             return nodeSupplier.getNodes();
         } catch (Exception e) {
-            log.error("从NodeSupplier获取节点列表失败", e);
+            log.error("从 NodeSupplier 获取节点列表失败", e);
             return null;
         }
     }

@@ -178,7 +178,7 @@ public class MediaController {
             node = nodeService.selectNode();
         }
 
-        return ZlmRestService.getVersion(node.getHost(), node.getSecret());
+        return ZlmHttpClient.getVersion(node.host(), node.secret());
     }
 
     @GetMapping("/nodes")

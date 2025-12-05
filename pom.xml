@@ -88,10 +88,10 @@
 
         <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
         <!-- Base16/32/64、Hex、各种摘要算法（MD5、SHA-1、SHA-256…）编码/解码 -->
-        <dependency>
+        <!--<dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-        </dependency>
+        </dependency>-->
         <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
         <!-- Apache HttpClient 5.x，HTTP/HTTPS 客户端，连接池、重试、超时、代理等 -->
         <dependency>

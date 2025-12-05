@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * 音视频轨道信息。
+ * 音视频轨道信息
  *
  * @param channels      音频通道数
  * @param codecId       编码 ID，H264=0,H265=1,AAC=2,G711A=3,G711U=4
