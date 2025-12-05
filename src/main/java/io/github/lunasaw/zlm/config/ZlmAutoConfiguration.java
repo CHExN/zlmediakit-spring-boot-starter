@@ -8,8 +8,6 @@ import io.github.lunasaw.zlm.hook.service.impl.DefaultZlmHookServiceImpl;
 import io.github.lunasaw.zlm.node.LoadBalancer;
 import io.github.lunasaw.zlm.node.NodeSupplier;
 import io.github.lunasaw.zlm.node.impl.*;
-import io.github.lunasaw.zlm.node.service.NodeService;
-import io.github.lunasaw.zlm.node.service.impl.NodeServiceImpl;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -92,20 +90,6 @@ public class ZlmAutoConfiguration {
     @ConditionalOnProperty(prefix = "zlm", name = "hook-enable", havingValue = "true")
     public ZlmHookController zlmHookAPI(ZlmHookService zlmHookService, @Qualifier("zlmTaskExecutor") AsyncTaskExecutor executor) {
         return new ZlmHookController(zlmHookService, executor);
-    }
-
-    /**
-     * 默认的 NodeService 实现
-     * <p>
-     * 当缺失时启用
-     *
-     * @param loadBalancer 负载均衡器实例
-     * @return NodeServiceImpl 实例
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public NodeService nodeService(LoadBalancer loadBalancer) {
-        return new NodeServiceImpl(loadBalancer);
     }
 
     /**
