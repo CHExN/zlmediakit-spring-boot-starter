@@ -2,6 +2,7 @@ package io.github.lunasaw.zlm.api.client;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import io.github.lunasaw.zlm.api.client.exception.ZlmClientException;
 import io.github.lunasaw.zlm.api.client.exception.ZlmHttpException;
 import io.github.lunasaw.zlm.api.client.exception.ZlmNetworkException;
@@ -10,14 +11,14 @@ import io.github.lunasaw.zlm.api.client.exception.ZlmServerException;
 import io.github.lunasaw.zlm.api.client.http.HttpClient5Executor;
 import io.github.lunasaw.zlm.api.client.http.HttpExecutor;
 import io.github.lunasaw.zlm.api.client.http.HttpStatusException;
-import io.github.lunasaw.zlm.api.client.result.ApiResponse;
-import io.github.lunasaw.zlm.api.client.result.ApiResponseForCloseRtpServer;
-import io.github.lunasaw.zlm.api.client.result.ApiResponseForCloseStreams;
-import io.github.lunasaw.zlm.api.client.result.ApiResponseForGeneral;
-import io.github.lunasaw.zlm.api.client.result.ApiResponseForGetRtpInfo;
-import io.github.lunasaw.zlm.api.client.result.ApiResponseForOpenRtpServer;
-import io.github.lunasaw.zlm.api.client.result.ApiResponseForSendRtp;
-import io.github.lunasaw.zlm.api.client.result.ApiResponseForSetServerConfig;
+import io.github.lunasaw.zlm.api.client.resp.ApiResponse;
+import io.github.lunasaw.zlm.api.client.resp.ApiResponseForCloseRtpServer;
+import io.github.lunasaw.zlm.api.client.resp.ApiResponseForCloseStreams;
+import io.github.lunasaw.zlm.api.client.resp.ApiResponseForGeneral;
+import io.github.lunasaw.zlm.api.client.resp.ApiResponseForGetRtpInfo;
+import io.github.lunasaw.zlm.api.client.resp.ApiResponseForOpenRtpServer;
+import io.github.lunasaw.zlm.api.client.resp.ApiResponseForSendRtp;
+import io.github.lunasaw.zlm.api.client.resp.ApiResponseForSetServerConfig;
 import io.github.lunasaw.zlm.api.entity.CloseSendRtpItem;
 import io.github.lunasaw.zlm.api.entity.CloseStreams;
 import io.github.lunasaw.zlm.api.entity.ConnectRtpServerItem;
@@ -134,6 +135,8 @@ public class DefaultZlmClient implements ZlmClient {
     private final String secret;
     private final HttpExecutor httpExecutor;
     private final ObjectMapper objectMapper;
+    private final TypeFactory typeFactory;
+
     @Deprecated
     private final JavaType mapStringObjectType;
     @Deprecated
@@ -148,6 +151,7 @@ public class DefaultZlmClient implements ZlmClient {
         this.secret = Objects.requireNonNull(secret, "secret must not be null");
         this.httpExecutor = Objects.requireNonNull(httpExecutor, "httpExecutor must not be null");
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper must not be null");
+        this.typeFactory = objectMapper.getTypeFactory();
         this.mapStringObjectType = mapOf(String.class, Object.class);
         this.listMapStringObjectType = listOf(mapStringObjectType);
     }
@@ -198,7 +202,14 @@ public class DefaultZlmClient implements ZlmClient {
 
     @Override
     public List<MediaInfo> getMediaList(StreamFilter filter) {
-        return call(Paths.GET_MEDIA_LIST, JsonUtils.toStringMap(filter), listOf(MediaInfo.class));
+        ApiResponseForGeneral<List<MediaInfo>> response = invoke(Paths.GET_MEDIA_LIST, JsonUtils.toStringMap(filter), listOf(MediaInfo.class));
+
+        List<MediaInfo> mediaInfos = unwrap(response);
+        if (mediaInfos == null) {
+            return List.of();
+        }
+
+        return mediaInfos;
     }
 
     @Override
@@ -608,21 +619,18 @@ public class DefaultZlmClient implements ZlmClient {
 
     /**
      * 调用无需返回数据的接口，自动附带 secret。
-     *
-     * @param apiPath API 路径
-     * @param params  表单参数
      */
     protected void call(String apiPath, Map<String, String> params) {
-        ApiResponseForGeneral<Void> response = invoke(apiPath, params, typeOf(Void.class));
+        // dataType = Void
+        JavaType voidType = typeOf(Void.class);
+        ApiResponseForGeneral<Void> response = invoke(apiPath, params, voidType);
         unwrap(response);
     }
 
     /**
      * 调用返回数据的接口，自动附带 secret。
      *
-     * @param apiPath  API 路径
-     * @param params   表单参数
-     * @param dataType 数据类型
+     * @param dataType data 字段的 Jackson 类型（可用于 List/Map/自定义复杂类型）
      */
     protected <T> T call(String apiPath, Map<String, String> params, JavaType dataType) {
         ApiResponseForGeneral<T> response = invoke(apiPath, params, dataType);
@@ -631,20 +639,11 @@ public class DefaultZlmClient implements ZlmClient {
 
     /**
      * 表单方式调用并按泛型解析响应。
-     *
-     * @param apiPath  API 路径
-     * @param params   表单参数
-     * @param dataType data 字段类型
      */
     protected <T> ApiResponseForGeneral<T> invoke(String apiPath, Map<String, String> params, JavaType dataType) {
         String json = post(apiPath, params, true);
-        JavaType responseType = objectMapper.getTypeFactory()
-                .constructParametricType(ApiResponseForGeneral.class, dataType);
-        try {
-            return objectMapper.readValue(json, responseType);
-        } catch (IOException e) {
-            throw new ZlmProtocolException("Failed to parse response for " + apiPath, e);
-        }
+        JavaType responseType = apiResponseOf(dataType);
+        return readValue(json, responseType, apiPath, "response");
     }
 
     /**
@@ -652,35 +651,23 @@ public class DefaultZlmClient implements ZlmClient {
      */
     protected <T> T invokeRaw(String apiPath, Map<String, String> params, JavaType dataType) {
         String json = post(apiPath, params, true);
-        try {
-            return objectMapper.readValue(json, dataType);
-        } catch (IOException e) {
-            throw new ZlmProtocolException("Failed to parse raw response for " + apiPath, e);
-        }
+        return readValue(json, dataType, apiPath, "raw response");
     }
 
     /**
      * JSON 方式调用并按泛型解析响应，secret 通过 query 透传。
-     *
-     * @param apiPath  API 路径
-     * @param payload  请求体对象
-     * @param dataType data 字段类型
      */
     protected <T> ApiResponseForGeneral<T> invokeJson(String apiPath, Object payload, JavaType dataType) {
-        String body;
+        final String body;
         try {
             body = objectMapper.writeValueAsString(payload);
         } catch (IOException e) {
             throw new ZlmProtocolException("Failed to serialize payload for " + apiPath, e);
         }
+
         String json = postJson(apiPath, body);
-        JavaType responseType = objectMapper.getTypeFactory()
-                .constructParametricType(ApiResponseForGeneral.class, dataType);
-        try {
-            return objectMapper.readValue(json, responseType);
-        } catch (IOException e) {
-            throw new ZlmProtocolException("Failed to parse response for " + apiPath, e);
-        }
+        JavaType responseType = apiResponseOf(dataType);
+        return readValue(json, responseType, apiPath, "response");
     }
 
     protected byte[] postBytes(String apiPath, Map<String, String> params, boolean includeSecret) {
@@ -688,7 +675,7 @@ public class DefaultZlmClient implements ZlmClient {
         try {
             return httpExecutor.postFormForBytes(apiUrl(apiPath), allParams);
         } catch (HttpStatusException e) {
-            throw new ZlmHttpException(e.getStatusCode(), "HTTP error when calling " + apiPath, e);
+            throw toZlmHttpException(apiPath, e);
         } catch (IOException e) {
             throw new ZlmNetworkException("Network error when calling " + apiPath, e);
         }
@@ -698,7 +685,7 @@ public class DefaultZlmClient implements ZlmClient {
         try {
             return httpExecutor.postJson(apiUrlWithSecret(apiPath), json);
         } catch (HttpStatusException e) {
-            throw new ZlmHttpException(e.getStatusCode(), "HTTP error when calling " + apiPath, e);
+            throw toZlmHttpException(apiPath, e);
         } catch (IOException e) {
             throw new ZlmNetworkException("Network error when calling " + apiPath, e);
         }
@@ -709,7 +696,7 @@ public class DefaultZlmClient implements ZlmClient {
         try {
             return httpExecutor.postForm(apiUrl(apiPath), allParams);
         } catch (HttpStatusException e) {
-            throw new ZlmHttpException(e.getStatusCode(), "HTTP error when calling " + apiPath, e);
+            throw toZlmHttpException(apiPath, e);
         } catch (IOException e) {
             throw new ZlmNetworkException("Network error when calling " + apiPath, e);
         }
@@ -729,11 +716,12 @@ public class DefaultZlmClient implements ZlmClient {
         if (resp == null) {
             throw new ZlmClientException("Empty response from ZLMediaKit");
         }
-        if (resp.code() == null) {
+        Integer code = resp.code();
+        if (code == null) {
             throw new ZlmClientException("Missing code in response");
         }
-        if (resp.code() != 0) {
-            throw new ZlmServerException(resp.code(), resp.msg());
+        if (code != 0) {
+            throw new ZlmServerException(code, resp.msg());
         }
     }
 
@@ -763,7 +751,9 @@ public class DefaultZlmClient implements ZlmClient {
 
     protected String apiUrlWithSecret(String apiPath) {
         String base = apiUrl(apiPath);
-        return base.contains("?") ? base + "&secret=" + secret : base + "?secret=" + secret;
+        return base.contains("?")
+                ? base + "&secret=" + secret
+                : base + "?secret=" + secret;
     }
 
     protected Map<String, String> withSecret(Map<String, String> params) {
@@ -771,29 +761,71 @@ public class DefaultZlmClient implements ZlmClient {
         if (params != null) {
             merged.putAll(params);
         }
-        if (!merged.containsKey("secret") || merged.get("secret") == null) {
-            merged.put("secret", secret);
-        }
+        merged.computeIfAbsent("secret", k -> secret);
         return merged;
     }
 
 
-    /// ====== 类型辅助方法 ======
+    /// ====== 统一的 Type & JSON 辅助 ======
+
+    /**
+     * 统一 JSON 解析入口
+     */
+    protected <T> T readValue(String json, JavaType type, String apiPath, String scene) {
+        try {
+            return objectMapper.readValue(json, type);
+        } catch (IOException e) {
+            // scene: "response", "raw response" 等
+            throw new ZlmProtocolException("Failed to parse " + scene + " for " + apiPath, e);
+        }
+    }
+
+    /**
+     * 尝试从 HTTP 错误 body 中解析 ZLM 的 ApiResponseForGeneral<Void>
+     */
+    protected ApiResponseForGeneral<Void> tryParseErrorBody(String apiPath, String body) {
+        if (body == null || body.isEmpty()) {
+            return null;
+        }
+        JavaType voidType = apiResponseOf(typeOf(Void.class));
+        try {
+            return objectMapper.readValue(body, voidType);
+        } catch (IOException ignored) {
+            // body 不是规范的 ZLM JSON，直接忽略，让外层用通用错误信息
+            return null;
+        }
+    }
+
+    /**
+     * 将 HttpStatusException 转成更友好的 ZlmHttpException，复用逻辑
+     */
+    protected RuntimeException toZlmHttpException(String apiPath, HttpStatusException e) {
+        String baseMsg = "HTTP error when calling " + apiPath;
+        ApiResponseForGeneral<Void> resp = tryParseErrorBody(apiPath, e.getBody());
+        if (resp != null && resp.msg() != null && !resp.msg().isEmpty()) {
+            return new ZlmHttpException(e.getStatusCode(), baseMsg + ": " + resp.msg(), e);
+        }
+        return new ZlmHttpException(e.getStatusCode(), baseMsg, e);
+    }
+
+    protected JavaType apiResponseOf(JavaType dataType) {
+        return typeFactory.constructParametricType(ApiResponseForGeneral.class, dataType);
+    }
 
     protected JavaType typeOf(Class<?> clazz) {
-        return objectMapper.getTypeFactory().constructType(clazz);
+        return typeFactory.constructType(clazz);
     }
 
     protected JavaType listOf(Class<?> elementClass) {
-        return objectMapper.getTypeFactory().constructCollectionType(List.class, elementClass);
+        return typeFactory.constructCollectionType(List.class, elementClass);
     }
 
     protected JavaType listOf(JavaType elementType) {
-        return objectMapper.getTypeFactory().constructCollectionType(List.class, elementType);
+        return typeFactory.constructCollectionType(List.class, elementType);
     }
 
     protected JavaType mapOf(Class<?> keyClass, Class<?> valueClass) {
-        return objectMapper.getTypeFactory().constructMapType(Map.class, keyClass, valueClass);
+        return typeFactory.constructMapType(Map.class, keyClass, valueClass);
     }
 
 }

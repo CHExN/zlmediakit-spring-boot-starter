@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.api.client.result;
+package io.github.lunasaw.zlm.api.client.resp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.lunasaw.zlm.api.entity.CloseStreams;
@@ -17,9 +17,9 @@ import lombok.experimental.Accessors;
 public class ApiResponseForCloseStreams extends CloseStreams implements ApiResponse {
 
     @JsonProperty("code")
-    private final Integer code;
+    private Integer code;
 
     @JsonProperty("msg")
-    private final String msg;
+    private String msg;
 
 }

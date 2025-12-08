@@ -10,10 +10,12 @@ import java.io.IOException;
 @Getter
 public class HttpStatusException extends IOException {
 
+    private final String body;
     private final int statusCode;
 
-    public HttpStatusException(int statusCode, String message) {
+    public HttpStatusException(int statusCode, String body, String message) {
         super(message);
+        this.body = body;
         this.statusCode = statusCode;
     }
 

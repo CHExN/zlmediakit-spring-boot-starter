@@ -60,7 +60,7 @@ public class HttpClient5Executor implements HttpExecutor {
                     ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8)
                     : "";
             if (code >= 400) {
-                throw new HttpStatusException(code, "Unexpected HTTP status " + code + " from " + url);
+                throw new HttpStatusException(code, body, "Unexpected HTTP status " + code + " from " + url);
             }
             return body;
         });
@@ -79,13 +79,15 @@ public class HttpClient5Executor implements HttpExecutor {
 
         return httpClient.execute(post, response -> {
             int code = response.getCode();
-            byte[] body = response.getEntity() != null
+            if (code >= 400) {
+                String body = response.getEntity() != null
+                        ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8)
+                        : "";
+                throw new HttpStatusException(code, body, "Unexpected HTTP status " + code + " from " + url);
+            }
+            return response.getEntity() != null
                     ? EntityUtils.toByteArray(response.getEntity())
                     : new byte[0];
-            if (code >= 400) {
-                throw new HttpStatusException(code, "Unexpected HTTP status " + code + " from " + url);
-            }
-            return body;
         });
     }
 
@@ -101,7 +103,7 @@ public class HttpClient5Executor implements HttpExecutor {
                     ? EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8)
                     : "";
             if (code >= 400) {
-                throw new HttpStatusException(code, "Unexpected HTTP status " + code + " from " + url);
+                throw new HttpStatusException(code, body, "Unexpected HTTP status " + code + " from " + url);
             }
             return body;
         });

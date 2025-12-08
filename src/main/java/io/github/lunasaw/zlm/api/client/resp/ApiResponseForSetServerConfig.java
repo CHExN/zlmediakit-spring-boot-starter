@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.api.client.result;
+package io.github.lunasaw.zlm.api.client.resp;
 
 /**
  * ZLM API 结果 - 设置服务器配置

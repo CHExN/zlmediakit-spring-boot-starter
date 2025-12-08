@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.api.client.result;
+package io.github.lunasaw.zlm.api.client.resp;
 
 /**
  * ZLM API 返回响应接口

@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.api.client.result;
+package io.github.lunasaw.zlm.api.client.resp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
