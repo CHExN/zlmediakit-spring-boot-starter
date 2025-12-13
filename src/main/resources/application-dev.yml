@@ -3,7 +3,7 @@ zlm:
   hook-enable: true
   balance: round_robin
   nodes:
-    - server-id: "zlm"
+    - node-id: "zlm"
       host: "http://127.0.0.1"
       secret: your_secret
 

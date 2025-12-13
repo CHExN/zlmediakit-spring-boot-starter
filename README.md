@@ -58,16 +58,12 @@ zlm:
   enable: true # 是否启用，未启用不会加载
   balance: round_robin # 节点负载均衡算法，默认round_robin
   nodes: # zlm节点列表，每个节点配置如下
-    - server-id: zlm-node-1 # 节点ID，可自定义
+    - node-id: zlm-node-1 # 节点ID，可自定义
       host: "http://127.0.0.1:9092" # 节点地址
       secret: zlm # 节点密钥
-      enabled: true # 节点是否启用
-      hook-enabled: true # 节点是否启用hook接口，启用hook会注入hook接口，默认true，需要注意拦截器放通
-    - server-id: zlm-node-2 # 可配置多个节点
+    - node-id: zlm-node-2 # 可配置多个节点
       host: "http://127.0.0.1:9093"
       secret: zlm
-      enabled: true
-      hook-enabled: true
 ```
 
 ### 3. 使用REST API
@@ -226,11 +222,9 @@ zlm:
   enable: true                    # 是否启用ZLM功能
   balance: round_robin           # 负载均衡算法
   nodes: # 节点配置列表
-    - server-id: unique-id       # 节点唯一标识
+    - node-id: unique-id       # 节点唯一标识
       host: "http://ip:port"     # 节点地址
       secret: "secret-key"       # API密钥
-      enabled: true              # 是否启用该节点
-      hook-enabled: true         # 是否启用Hook功能
       weight: 1                  # 节点权重（仅加权算法有效）
 ```
 
@@ -508,23 +502,17 @@ zlm:
   enable: true
   balance: consistent_hashing
   nodes:
-    - server-id: zlm-beijing-1
+    - node-id: zlm-beijing-1
       host: "http://10.0.1.10:9092"
       secret: "beijing-secret"
-      enabled: true
-      hook-enabled: true
       weight: 3
-    - server-id: zlm-beijing-2
+    - node-id: zlm-beijing-2
       host: "http://10.0.1.11:9092"
       secret: "beijing-secret"
-      enabled: true
-      hook-enabled: true
       weight: 2
-    - server-id: zlm-shanghai-1
+    - node-id: zlm-shanghai-1
       host: "http://10.0.2.10:9092"
       secret: "shanghai-secret"
-      enabled: true
-      hook-enabled: false  # 上海节点不处理Hook
       weight: 1
 ```
 
@@ -623,20 +611,18 @@ public class ConditionalZlmHookService extends AbstractZlmHookService {
 
 A: 请检查以下几点：
 
-1. 确保 `hook-enabled: true`
-2. 检查Spring Boot的拦截器是否放通了Hook接口路径
-3. 确认ZLMediaKit配置中Hook地址是否正确
-4. 检查网络连通性
+1. 检查 Spring Boot 的拦截器是否放通了 Hook 接口路径
+2. 确认 ZLMediaKit 配置中 Hook 地址是否正确
+3. 检查网络连通性
 
 ### Q: 多节点负载均衡不生效？
 
 A: 请确认：
 
-1. 多个节点的 `enabled: true`
-2. 负载均衡算法配置正确
-3. 节点权重配置（如使用加权算法）
+1. 负载均衡算法配置正确
+2. 节点权重配置（如使用加权算法）
 
-### Q: 自定义NodeSupplier不生效？
+### Q: 自定义 NodeSupplier 不生效？
 
 A: 请检查：
 
