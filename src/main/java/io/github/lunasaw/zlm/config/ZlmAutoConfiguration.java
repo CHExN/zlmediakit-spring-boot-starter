@@ -2,6 +2,10 @@ package io.github.lunasaw.zlm.config;
 
 import io.github.lunasaw.zlm.api.client.ZlmClient;
 import io.github.lunasaw.zlm.api.client.ZlmClientManager;
+import io.github.lunasaw.zlm.config.condition.ConditionalOnZlmHookEnabled;
+import io.github.lunasaw.zlm.config.condition.ConditionalOnZlmNodesConfigured;
+import io.github.lunasaw.zlm.config.props.ZlmHookProperties;
+import io.github.lunasaw.zlm.config.props.ZlmProperties;
 import io.github.lunasaw.zlm.hook.ZlmHookController;
 import io.github.lunasaw.zlm.hook.service.ZlmHookService;
 import io.github.lunasaw.zlm.hook.service.impl.DefaultZlmHookServiceImpl;
@@ -11,13 +15,16 @@ import io.github.lunasaw.zlm.node.impl.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -30,42 +37,45 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 @AutoConfiguration
 @ImportRuntimeHints(ZlmRuntimeHints.class)
-@EnableConfigurationProperties({ZlmProperties.class, ZlmThreadPoolProperties.class})
-@ConditionalOnProperty(prefix = "zlm", name = "enable", havingValue = "true", matchIfMissing = true)
-public class ZlmAutoConfiguration {
+@EnableConfigurationProperties({ZlmProperties.class, ZlmHookProperties.class})
+@ConditionalOnZlmNodesConfigured
+class ZlmAutoConfiguration {
 
     /**
      * 默认的 ZlmHookService 实现
      * <p>
-     * 当 zlm.hook-enable = true 且容器中不存在自定义 ZlmHookService Bean 时，装配默认实现
+     * 当 zlm.hook.enable = true 且容器中不存在自定义 ZlmHookService Bean 时，装配默认实现
      *
      * @return DefaultZlmHookServiceImpl 实例
      */
     @Bean
-    @ConditionalOnProperty(prefix = "zlm", name = "hook-enable", havingValue = "true")
+    @ConditionalOnZlmHookEnabled
     @ConditionalOnMissingBean
-    public ZlmHookService zlmHookService() {
+    ZlmHookService zlmHookService() {
         return new DefaultZlmHookServiceImpl();
     }
 
     /**
-     * ZLMediaKit 专用线程池
-     * 当 zlm.hook-enable = true 且存在 ZlmHookService 时装配
+     * ZLMediaKit Hook 专用线程池
+     * <p>
+     * 当 zlm.hook.enable = true 且 ZlmHookService 存在时装配
      *
-     * @param config 线程池配置
+     * @param hookProps ZlmHook 配置属性
      * @return ThreadPoolTaskExecutor 实例
      */
     @Bean
-    @ConditionalOnProperty(prefix = "zlm", name = "hook-enable", havingValue = "true")
+    @ConditionalOnZlmHookEnabled
     @ConditionalOnBean(ZlmHookService.class)
-    @ConditionalOnMissingBean(name = "zlmTaskExecutor")
-    public ThreadPoolTaskExecutor zlmTaskExecutor(ZlmThreadPoolProperties config) {
+    @ConditionalOnMissingBean(name = "zlmHookTaskExecutor")
+    ThreadPoolTaskExecutor zlmHookTaskExecutor(ZlmHookProperties hookProps) {
+        var threadPoolConfig = hookProps.getThreadPool();
+
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(config.getCorePoolSize());
-        executor.setMaxPoolSize(config.getMaxPoolSize());
-        executor.setQueueCapacity(config.getQueueCapacity());
-        executor.setKeepAliveSeconds(config.getKeepAliveTime());
-        executor.setThreadNamePrefix(config.getThreadNamePrefix());
+        executor.setCorePoolSize(threadPoolConfig.getCorePoolSize());
+        executor.setMaxPoolSize(threadPoolConfig.getMaxPoolSize());
+        executor.setQueueCapacity(threadPoolConfig.getQueueCapacity());
+        executor.setKeepAliveSeconds(threadPoolConfig.getKeepAliveTime());
+        executor.setThreadNamePrefix(threadPoolConfig.getThreadNamePrefix());
 
         // 等待所有任务完成后再关闭线程池
         executor.setWaitForTasksToCompleteOnShutdown(true);
@@ -82,17 +92,48 @@ public class ZlmAutoConfiguration {
     /**
      * ZlmHookAPI 控制器
      * <p>
-     * 当 zlm.hook-enable = true 时装配
+     * 当 zlm.hook.enable = true 且 ZlmHookService 存在时装配
      *
      * @param zlmHookService ZlmHookService 实例
      * @param executor       异步任务执行器
      * @return ZlmHookAPI 实例
      */
     @Bean
-    @ConditionalOnProperty(prefix = "zlm", name = "hook-enable", havingValue = "true")
-    public ZlmHookController zlmHookAPI(ZlmHookService zlmHookService, @Qualifier("zlmTaskExecutor") AsyncTaskExecutor executor) {
+    @ConditionalOnZlmHookEnabled
+    @ConditionalOnBean(ZlmHookService.class)
+    ZlmHookController zlmHookAPI(ZlmHookService zlmHookService, @Qualifier("zlmHookTaskExecutor") AsyncTaskExecutor executor) {
         return new ZlmHookController(zlmHookService, executor);
     }
+
+    @Bean
+    @ConditionalOnZlmHookEnabled
+    @ConditionalOnClass(name = "org.springframework.web.servlet.config.annotation.WebMvcConfigurer")
+    @ConditionalOnBean(ZlmHookController.class)
+    ZlmHookWebMvcConfiguration zlmHookWebMvcConfiguration(ZlmHookProperties hookProps) {
+        return new ZlmHookWebMvcConfiguration(hookProps);
+    }
+
+    /**
+     * Zlm Hook 专用的 WebMVC 配置
+     * <p>
+     * 用于设置 ZlmHookController 的路径前缀
+     */
+    @Configuration(proxyBeanMethods = false)
+    static class ZlmHookWebMvcConfiguration implements WebMvcConfigurer {
+
+        private final ZlmHookProperties hookProps;
+
+        public ZlmHookWebMvcConfiguration(ZlmHookProperties hookProps) {
+            this.hookProps = hookProps;
+        }
+
+        @Override
+        public void configurePathMatch(PathMatchConfigurer configurer) {
+            configurer.addPathPrefix(hookProps.getPath(), c -> c == ZlmHookController.class);
+        }
+
+    }
+
 
     /**
      * 默认的 NodeSupplier 实现
@@ -104,7 +145,7 @@ public class ZlmAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public NodeSupplier nodeSupplier(ZlmProperties zlmProperties) {
+    NodeSupplier nodeSupplier(ZlmProperties zlmProperties) {
         return new DefaultNodeSupplier(zlmProperties);
     }
 
@@ -119,7 +160,7 @@ public class ZlmAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public ZlmClientManager zlmClientManager(LoadBalancer loadBalancer, NodeSupplier nodeSupplier) {
+    ZlmClientManager zlmClientManager(LoadBalancer loadBalancer, NodeSupplier nodeSupplier) {
         return new ZlmClientManager(loadBalancer, nodeSupplier);
     }
 
@@ -134,7 +175,7 @@ public class ZlmAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public LoadBalancer loadBalancer(ZlmProperties zlmProperties, NodeSupplier nodeSupplier) {
+    LoadBalancer loadBalancer(ZlmProperties zlmProperties, NodeSupplier nodeSupplier) {
         LoadBalancer balancer = switch (zlmProperties.getBalance()) {
             case RANDOM -> new RandomLoadBalancer();
             case ROUND_ROBIN -> new RoundRobinLoadBalancer();

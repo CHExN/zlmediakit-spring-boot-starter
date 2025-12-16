@@ -1,6 +1,5 @@
 package io.github.lunasaw.zlm.node;
 
-import io.github.lunasaw.zlm.config.ZlmNode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;

@@ -6,7 +6,7 @@
 
     <groupId>io.github.lunasaw</groupId>
     <artifactId>zlmediakit-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <name>zlmediakit-spring-boot-starter</name>
     <description>ZLMediaKit restful api and hook starter</description>
@@ -61,10 +61,10 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring Web 依赖 -->
+        <!-- Spring Web MVC 依赖 -->
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
+            <artifactId>spring-webmvc</artifactId>
             <optional>true</optional>
         </dependency>
 

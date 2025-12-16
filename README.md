@@ -51,19 +51,31 @@ API进行了完整封装，并提供了Hook事件处理机制，支持集群化�
 
 ### 2. 配置文件
 
-在 `application.yml` 中添加ZLMediaKit配置：
+在 `application.yml` 中添加 ZLMediaKit 配置：
 
 ```yaml
 zlm:
-  enable: true # 是否启用，未启用不会加载
-  balance: round_robin # 节点负载均衡算法，默认round_robin
-  nodes: # zlm节点列表，每个节点配置如下
-    - node-id: zlm-node-1 # 节点ID，可自定义
+  balance: round_robin # 节点负载均衡算法，默认 round_robin
+  nodes: # zlm 节点列表，未配置且或所有节点 enable 都为 false 则不启用
+    zlm-node-1: # 节点 ID，可自定义
       host: "http://127.0.0.1:9092" # 节点地址
       secret: zlm # 节点密钥
-    - node-id: zlm-node-2 # 可配置多个节点
+    zlm-node-2: # 可配置多个节点
       host: "http://127.0.0.1:9093"
       secret: zlm
+    zlm-node-3:
+      host: "http://127.0.0.1:9094"
+      secret: zlm
+      enable: false # 可单独禁用某个节点
+  hook:
+    path: /zlm/hook # Hook 接口前缀，默认 /index/hook
+    enable: true    # 是否启用 Hook 功能，默认 true
+    thread-pool:
+      core-pool-size: 5
+      max-pool-size: 30
+      keep-alive-time: 30
+      queue-capacity: 100
+      thread-name-prefix: zlm-hook-
 ```
 
 ### 3. 使用REST API
@@ -71,23 +83,23 @@ zlm:
 #### 方式一：直接调用静态方法
 
 ```java
-import io.github.lunasaw.zlm.api.ZlmHttpClient;
+import io.github.lunasaw.zlm.api.client.ZlmClient;
 import io.github.lunasaw.zlm.entity.ServerResponse;
 import io.github.lunasaw.zlm.entity.Version;
 import io.github.lunasaw.zlm.entity.MediaData;
 import io.github.lunasaw.zlm.entity.req.MediaReq;
 
 // 获取服务器版本信息
-ServerResponse<Version> versionResponse = ZlmHttpClient.getVersion("http://127.0.0.1:9092", "zlm");
+ServerResponse<Version> versionResponse = ZlmClient.getVersion("http://127.0.0.1:9092", "zlm");
 System.out.println("ZLMediaKit版本: " + versionResponse.data().buildTime());
 
 // 获取流列表
-ServerResponse<List<MediaData>> mediaList = ZlmHttpClient.getMediaList(
+ServerResponse<List<MediaData>> mediaList = ZlmClient.getMediaList(
         "http://127.0.0.1:9092", "zlm", new MediaReq("rtsp", "__defaultVhost__", "live", "test"));
 mediaList.data().forEach(media -> System.out.println("流ID: " + media.app() + "/" + media.stream()));
 ```
 
-#### 方式二：使用内置API控制器
+#### 方式二：使用内置API控制器（已删除）
 
 项目内置了完整的REST API控制器，可以直接通过HTTP接口访问：
 
@@ -105,11 +117,11 @@ Header: ZLM-Node-Key: <节点key，留空则走负载均衡>
   "stream": ""
 }
 
-# 获取API文档
+# 获取 API 文档
 GET http://localhost:8080/swagger-ui.html
 ```
 
-支持的API接口路径前缀：`/zlm/api/`，包括：
+支持的 API 接口路径前缀：`/zlm/api/`，包括：
 
 - 服务器管理：`/zlm/api/version`、`/zlm/api/server/config`
 - 流媒体管理：`/zlm/api/media/list`、`/zlm/api/media/close`
@@ -155,14 +167,14 @@ public class DemoService {
 ### 4. 自测与验证
 
 - 构建：`mvn -DskipTests clean package`
-- 本地运行：`mvn -DskipTests spring-boot:run -Dzlm.nodes[0].host=http://192.168.1.200:80 -Dzlm.nodes[0].secret=<你的secret>`
+- 本地运行：`mvn -DskipTests spring-boot:run -Dzlm.nodes.zlm-node.host=http://192.168.1.200 -Dzlm.nodes.zlm-node.secret=<你的secret>`
 - 快速验证：
-  - `curl -H "ZLM-Node-Key: <节点key或留空>" "http://localhost:8080/zlm/api/version"`
-  - `curl -X POST -H "Content-Type: application/json" -H "ZLM-Node-Key: <节点key或留空>" "http://localhost:8080/zlm/api/media/list" -d '{"app":"live","stream":"test","schema":"rtsp","vhost":"__defaultVhost__"}'`
+  - `curl -H "ZLM-Node-Key: <节点 key 或留空>" "http://localhost:8080/zlm/api/version"`
+  - `curl -X POST -H "Content-Type: application/json" -H "ZLM-Node-Key: <节点 key 或留空>" "http://localhost:8080/zlm/api/media/list" -d '{"app":"live","stream":"test","schema":"rtsp","vhost":"__defaultVhost__"}'`
 
-### 5. 实现Hook服务
+### 5. 实现 Hook 服务
 
-创建Hook服务实现类来处理ZLMediaKit的事件回调：
+创建 Hook 服务实现类来处理 ZLMediaKit 的事件回调：
 
 ```java
 import io.github.lunasaw.zlm.hook.service.AbstractZlmHookService;
@@ -205,7 +217,7 @@ public class CustomZlmHookService extends AbstractZlmHookService {
 
 ### 负载均衡算法
 
-支持以下5种负载均衡算法：
+支持以下 5 种负载均衡算法：
 
 | 算法    | 配置值                  | 说明         |
 |-------|----------------------|------------|
@@ -215,18 +227,6 @@ public class CustomZlmHookService extends AbstractZlmHookService {
 | 加权轮询  | `weight_round_robin` | 基于权重的轮询    |
 | 加权随机  | `weight_random`      | 基于权重的随机选择  |
 
-### 配置参数详解
-
-```yaml
-zlm:
-  enable: true                    # 是否启用ZLM功能
-  balance: round_robin           # 负载均衡算法
-  nodes: # 节点配置列表
-    - node-id: unique-id       # 节点唯一标识
-      host: "http://ip:port"     # 节点地址
-      secret: "secret-key"       # API密钥
-      weight: 1                  # 节点权重（仅加权算法有效）
-```
 
 ## 与上游仓库的主要差异
 
@@ -234,9 +234,8 @@ zlm:
 - Hook、REST 请求/响应模型补齐 Javadoc，字段命名与 ZLM 返回保持一致（如 schema、ssrc、port 等）。
 - `ZlmHttpClient` 与 REST 实体包路径统一为 `io.github.lunasaw.zlm.entity`，对象到参数 Map 的转换由 `JsonUtils` 统一处理。
 - 多节点场景通过请求头 `ZLM-Node-Key` 指定节点；为空则按负载均衡策略自动选择。
-- 文档示例同步到 Jackson+record 的新用法，去除了对 `zlm-api.md` 的依赖。
 
-## API功能详解
+## API 功能详解
 
 ### 1. 服务器管理
 
@@ -350,7 +349,7 @@ public class DefaultNodeSupplier implements NodeSupplier {
 
     @Override
     public ZlmNode getNode(String nodeId) {
-        return zlmProperties.getNodeMap().get(nodeId);
+        return zlmProperties.getNodes().get(nodeId);
     }
 }
 ```

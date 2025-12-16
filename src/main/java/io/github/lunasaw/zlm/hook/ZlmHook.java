@@ -7,7 +7,7 @@ public interface ZlmHook {
     @UtilityClass
     final class Paths {
         // Hook 基础路径
-        public static final String ZLM_HOOK = "/zlm/hook";
+        public static final String DEFAULT_PREFIX = "/index/hook";
         // 流量上报
         public static final String ON_FLOW_REPORT = "/on_flow_report";
         // HTTP 访问事件

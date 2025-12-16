@@ -1,4 +1,4 @@
-package io.github.lunasaw.zlm.config;
+package io.github.lunasaw.zlm.node;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +25,10 @@ public class ZlmNode {
      */
     private String secret;
     /**
+     * 是否启用该节点
+     */
+    private boolean enable = true;
+    /**
      * 节点权重
      */
     private int weight = 100;
@@ -36,6 +40,7 @@ public class ZlmNode {
         this.nodeId = node.nodeId;
         this.host = node.host;
         this.secret = node.secret;
+        this.enable = node.enable;
         this.weight = node.weight;
     }
 

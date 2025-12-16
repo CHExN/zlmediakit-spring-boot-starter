@@ -26,13 +26,12 @@ import static io.github.lunasaw.zlm.hook.ZlmHook.Paths.*;
 @Slf4j
 @Tag(name = "ZLM Hook", description = "ZLMediaKit 钩子回调接口，用于处理各种媒体流事件")
 @RestController
-@RequestMapping(ZLM_HOOK)
 public class ZlmHookController {
 
     private final ZlmHookService zlmHookService;
     private final AsyncTaskExecutor executor;
 
-    public ZlmHookController(ZlmHookService zlmHookService, @Qualifier("zlmTaskExecutor") AsyncTaskExecutor executor) {
+    public ZlmHookController(ZlmHookService zlmHookService, @Qualifier("zlmHookTaskExecutor") AsyncTaskExecutor executor) {
         this.zlmHookService = zlmHookService;
         this.executor = executor;
     }

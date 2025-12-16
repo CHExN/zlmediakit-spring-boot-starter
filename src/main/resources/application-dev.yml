@@ -1,11 +1,16 @@
 zlm:
-  enable: true
-  hook-enable: true
+  hook:
+    path: /index/hook
+    enable: true
   balance: round_robin
   nodes:
-    - node-id: "zlm"
+    zlm-1:
       host: "http://127.0.0.1"
-      secret: your_secret
+      secret: your_secret_1
+    zlm-2:
+      host: "http://127.0.0.2"
+      secret: your_secret_2
+
 
 springdoc:
   api-docs:

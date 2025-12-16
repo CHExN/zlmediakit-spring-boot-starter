@@ -1,6 +1,6 @@
 package io.github.lunasaw.zlm.node.impl;
 
-import io.github.lunasaw.zlm.config.ZlmNode;
+import io.github.lunasaw.zlm.node.ZlmNode;
 import io.github.lunasaw.zlm.node.LoadBalancer;
 import io.github.lunasaw.zlm.node.NodeSupplier;
 import lombok.extern.slf4j.Slf4j;

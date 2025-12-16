@@ -1,7 +1,7 @@
 package io.github.lunasaw.zlm.node.impl;
 
-import io.github.lunasaw.zlm.config.ZlmNode;
-import io.github.lunasaw.zlm.config.ZlmProperties;
+import io.github.lunasaw.zlm.node.ZlmNode;
+import io.github.lunasaw.zlm.config.props.ZlmProperties;
 import io.github.lunasaw.zlm.node.NodeSupplier;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public record DefaultNodeSupplier(ZlmProperties zlmProperties) implements NodeSu
 
     @Override
     public List<ZlmNode> getNodes() {
-        return zlmProperties.getNodes();
+        return zlmProperties.getNodeList();
     }
 
     @Override
@@ -31,6 +31,6 @@ public record DefaultNodeSupplier(ZlmProperties zlmProperties) implements NodeSu
             return null;
         }
 
-        return zlmProperties.getNodeMap().get(nodeId);
+        return zlmProperties.getNodes().get(nodeId);
     }
 }
